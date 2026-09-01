@@ -7,7 +7,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 async function generateCareerRoadmap(resumeJson) {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const prompt = `
 You are an expert career mentor and curriculum designer.
@@ -81,25 +81,25 @@ export async function saveRoadMap({ forceRegenerate = false } = {}) {
     industry: roadmap.industry || "General",
     initialNodes: Array.isArray(roadmap.initialNodes)
       ? roadmap.initialNodes.map((n, i) => ({
-          id: n.id?.toString() || `node-${i}`,
-          type: "default",
-          data: {
-            label: n.data?.title || n.data?.label || `Node ${i + 1}`,
-            description: n.data?.description || "",
-            link: n.data?.link || null,
-            level: n.data?.level || "Fundamentals",
-          },
-          position: n.position || { x: i * 250, y: 100 },
-        }))
+        id: n.id?.toString() || `node-${i}`,
+        type: "default",
+        data: {
+          label: n.data?.title || n.data?.label || `Node ${i + 1}`,
+          description: n.data?.description || "",
+          link: n.data?.link || null,
+          level: n.data?.level || "Fundamentals",
+        },
+        position: n.position || { x: i * 250, y: 100 },
+      }))
       : [],
     initialEdges: Array.isArray(roadmap.initialEdges)
       ? roadmap.initialEdges.map((e, i) => ({
-          id: e.id?.toString() || `edge-${i}`,
-          source: e.source?.toString(),
-          target: e.target?.toString(),
-          type: e.type || "smoothstep",
-          animated: e.animated ?? false,
-        }))
+        id: e.id?.toString() || `edge-${i}`,
+        source: e.source?.toString(),
+        target: e.target?.toString(),
+        type: e.type || "smoothstep",
+        animated: e.animated ?? false,
+      }))
       : [],
   };
 
