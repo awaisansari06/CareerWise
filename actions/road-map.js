@@ -7,7 +7,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 async function generateCareerRoadmap(resumeJson) {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
 
   const prompt = `
 You are an expert career mentor and curriculum designer.
