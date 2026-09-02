@@ -39,6 +39,18 @@ export default {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))'
 				},
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))'
+				},
+				info: {
+					DEFAULT: 'hsl(var(--info))',
+					foreground: 'hsl(var(--info-foreground))'
+				},
 				border: {
 					DEFAULT: 'hsl(var(--border))',
 				},
@@ -51,6 +63,15 @@ export default {
 					'4': 'hsl(var(--chart-4))',
 					'5': 'hsl(var(--chart-5))'
 				}
+			},
+			fontFamily: {
+				sans: ['var(--font-inter)', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+			},
+			boxShadow: {
+				'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+				'card': '0 4px 20px -2px rgba(0, 0, 0, 0.1)',
+				'elevated': '0 10px 30px -4px rgba(0, 0, 0, 0.15)',
+				'glow': '0 0 25px -5px hsl(var(--primary) / 0.15)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -73,11 +94,16 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-in': {
+					from: { opacity: '0', transform: 'translateY(4px)' },
+					to: { opacity: '1', transform: 'translateY(0)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.2s ease-out'
 			}
 		}
 	},

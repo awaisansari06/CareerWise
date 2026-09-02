@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,15 +9,29 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { generateQuiz, saveQuizResult } from "@/actions/interview";
 import QuizResult from "./quiz-result";
 import useFetch from "@/hooks/use-fetch";
-import { RotateLoader } from "react-spinners";
-import { Suspense } from "react";
-import { Loader2 } from "lucide-react";
+import {
+  Sparkles,
+  Loader2,
+  Clock,
+  HelpCircle,
+  Brain,
+  CheckCircle2,
+  Lightbulb,
+  ArrowRight,
+  ArrowLeft,
+  ShieldCheck,
+  Target,
+  Zap,
+} from "lucide-react";
 
 export default function Quiz() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -40,6 +54,8 @@ export default function Quiz() {
   useEffect(() => {
     if (quizData) {
       setAnswers(new Array(quizData.length).fill(null));
+      setCurrentQuestion(0);
+      setShowExplanation(false);
     }
   }, [quizData]);
 
@@ -51,10 +67,17 @@ export default function Quiz() {
 
   const handleNext = () => {
     if (currentQuestion < quizData.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
+      setCurrentQuestion((prev) => prev + 1);
       setShowExplanation(false);
     } else {
       finishQuiz();
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion((prev) => prev - 1);
+      setShowExplanation(false);
     }
   };
 
@@ -72,7 +95,7 @@ export default function Quiz() {
     const score = calculateScore();
     try {
       await saveQuizResultFn(quizData, answers, score);
-      toast.success("Quiz completed!");
+      toast.success("Mock interview completed and saved!");
     } catch (error) {
       toast.error(error.message || "Failed to save quiz results");
     }
@@ -82,102 +105,310 @@ export default function Quiz() {
     setCurrentQuestion(0);
     setAnswers([]);
     setShowExplanation(false);
-    generateQuizFn();
     setResultData(null);
+    generateQuizFn();
   };
 
+  // 1. AI Question Generation Loading State
   if (generatingQuiz) {
     return (
-    <div className="min-h-screen w-full flex flex-col px-5">
-          <div className="flex flex-1 items-center justify-center w-full">
-            <RotateLoader size={20} margin={20} color="gray" />
+      <Card className="border-border/80 bg-card/60 backdrop-blur-sm p-8 sm:p-12 text-center">
+        <div className="flex flex-col items-center justify-center space-y-4 max-w-md mx-auto">
+          <div className="relative">
+            <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+              <Brain className="h-8 w-8 animate-pulse" />
+            </div>
+            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-primary"></span>
+            </span>
           </div>
-    </div>
-  );
+
+          <div className="space-y-1.5">
+            <h3 className="text-xl font-bold text-foreground">
+              Synthesizing Interview Rubric
+            </h3>
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              CareerWise AI is analyzing your resume profile to formulate 10 personalized technical, conceptual, and situational questions.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2">
+            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            <span>Tailoring question scenarios...</span>
+          </div>
+        </div>
+      </Card>
+    );
   }
 
-  // Show results if quiz is completed
+  // 2. Results Screen
   if (resultData) {
     return (
-      <div className="mx-2">
+      <div className="w-full">
         <QuizResult result={resultData} onStartNew={startNewQuiz} />
       </div>
     );
   }
 
+  // 3. Mock Interview Readiness / Briefing Card (Empty State before starting)
   if (!quizData) {
     return (
-      <Card className="mx-2">
-        <CardHeader>
-          <CardTitle>Ready to test your knowledge?</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            This quiz contains 10 questions specific to your industry and
-            skills. Take your time and choose the best answer for each question.
-          </p>
+      <Card className="border-border/80 bg-card/60 backdrop-blur-sm overflow-hidden">
+        <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border/60 p-6 sm:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <Badge variant="neutral" className="gap-1 mb-1">
+                <Sparkles className="h-3 w-3 text-amber-400" />
+                <span>AI Proctor Assessment</span>
+              </Badge>
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                Interview Readiness Briefing
+              </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground max-w-xl">
+                Simulate a real-world technical and situational interview tailored directly to your resume background and career domain.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <CardContent className="p-6 sm:p-8 space-y-6">
+          {/* Key Specifications Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            <div className="rounded-xl border border-border/70 bg-card/60 p-3 sm:p-4 space-y-1">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <HelpCircle className="h-3.5 w-3.5 text-sky-500" />
+                <span>Questions</span>
+              </div>
+              <p className="text-lg sm:text-xl font-bold text-foreground">10 Items</p>
+              <p className="text-[11px] text-muted-foreground">Multiple Choice</p>
+            </div>
+
+            <div className="rounded-xl border border-border/70 bg-card/60 p-3 sm:p-4 space-y-1">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Clock className="h-3.5 w-3.5 text-indigo-500" />
+                <span>Duration</span>
+              </div>
+              <p className="text-lg sm:text-xl font-bold text-foreground">~15 Mins</p>
+              <p className="text-[11px] text-muted-foreground">Self-paced</p>
+            </div>
+
+            <div className="rounded-xl border border-border/70 bg-card/60 p-3 sm:p-4 space-y-1">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Target className="h-3.5 w-3.5 text-amber-500" />
+                <span>Target Level</span>
+              </div>
+              <p className="text-lg sm:text-xl font-bold text-foreground">Adaptive</p>
+              <p className="text-[11px] text-muted-foreground">Resume Aligned</p>
+            </div>
+
+            <div className="rounded-xl border border-border/70 bg-card/60 p-3 sm:p-4 space-y-1">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+                <span>Feedback</span>
+              </div>
+              <p className="text-lg sm:text-xl font-bold text-foreground">Instant</p>
+              <p className="text-[11px] text-muted-foreground">AI Tip Rubric</p>
+            </div>
+          </div>
+
+          {/* Assessment Scope */}
+          <div className="rounded-xl border border-border/60 bg-muted/20 p-4 sm:p-5 space-y-3">
+            <h4 className="text-xs sm:text-sm font-semibold text-foreground uppercase tracking-wider">
+              What This Assessment Evaluates
+            </h4>
+            <div className="grid sm:grid-cols-2 gap-2.5 text-xs sm:text-sm text-muted-foreground">
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                <span>Technical tools, domain frameworks & specialized knowledge</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                <span>Real-world workplace problem-solving & situational judgment</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                <span>Theoretical fundamentals derived from academic background</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                <span>Communication precision and ethical industry best practices</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Guidelines */}
+          <div className="flex items-start gap-3 text-xs text-muted-foreground bg-primary/5 rounded-lg p-3.5 border border-primary/15">
+            <Zap className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+            <p>
+              You can toggle real-time AI explanations after selecting an answer, or proceed directly through the interview and review all questions at the conclusion.
+            </p>
+          </div>
         </CardContent>
-        <CardFooter>
-          <Button onClick={generateQuizFn} className="w-full">
-            Start Quiz
+
+        <CardFooter className="p-6 sm:p-8 pt-0 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border/60 bg-card/30">
+          <p className="text-xs text-muted-foreground">
+            Scores are permanently saved to your performance trajectory
+          </p>
+          <Button
+            size="lg"
+            onClick={generateQuizFn}
+            className="w-full sm:w-auto gap-2 px-8 shadow-md"
+          >
+            <Sparkles className="h-4 w-4 text-amber-400" />
+            <span>Start Mock Interview</span>
+            <ArrowRight className="h-4 w-4" />
           </Button>
         </CardFooter>
       </Card>
     );
   }
 
+  // 4. In-Quiz Question Interface
   const question = quizData[currentQuestion];
+  const isLastQuestion = currentQuestion === quizData.length - 1;
+  const progressPercent = Math.round(((currentQuestion + 1) / quizData.length) * 100);
+  const selectedAnswer = answers[currentQuestion];
+  const optionLetters = ["A", "B", "C", "D"];
 
   return (
-    <Card className="mx-2">
-      <CardHeader>
-        <CardTitle>
-          Question {currentQuestion + 1} of {quizData.length}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-lg font-medium">{question.question}</p>
+    <Card className="border-border/80 bg-card/60 backdrop-blur-sm overflow-hidden shadow-lg">
+      {/* Quiz Progress Header */}
+      <div className="p-4 sm:p-6 border-b border-border/60 bg-card/40 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Badge variant="neutral" className="text-xs font-semibold px-2.5 py-0.5">
+              Question {currentQuestion + 1} of {quizData.length}
+            </Badge>
+            <span className="text-xs text-muted-foreground hidden sm:inline">
+              • Practice Mode
+            </span>
+          </div>
+          <span className="text-xs font-mono font-medium text-muted-foreground">
+            {progressPercent}% completed
+          </span>
+        </div>
+        <Progress value={progressPercent} className="h-2 w-full" />
+      </div>
+
+      <CardContent className="p-5 sm:p-8 space-y-6">
+        {/* Question Text */}
+        <div className="space-y-2">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-semibold tracking-tight text-foreground leading-snug">
+            {question.question}
+          </h2>
+        </div>
+
+        {/* Answers List */}
         <RadioGroup
+          value={selectedAnswer || ""}
           onValueChange={handleAnswer}
-          value={answers[currentQuestion]}
-          className="space-y-2"
+          className="space-y-3"
         >
-          {question.options.map((option, index) => (
-            <div key={index} className="flex items-center space-x-2">
-              <RadioGroupItem value={option} id={`option-${index}`} />
-              <Label htmlFor={`option-${index}`}>{option}</Label>
-            </div>
-          ))}
+          {question.options.map((option, index) => {
+            const isSelected = selectedAnswer === option;
+            const letter = optionLetters[index] || `${index + 1}`;
+
+            return (
+              <Label
+                key={index}
+                htmlFor={`option-${index}`}
+                className={`flex items-center gap-3.5 p-4 rounded-xl border transition-all duration-150 cursor-pointer select-none ${
+                  isSelected
+                    ? "border-primary bg-primary/10 dark:bg-primary/15 ring-2 ring-primary/40 shadow-sm text-foreground"
+                    : "border-border/70 bg-card/60 hover:border-primary/40 hover:bg-muted/30 text-foreground"
+                }`}
+              >
+                <div
+                  className={`h-7 w-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
+                    isSelected
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground border border-border/60"
+                  }`}
+                >
+                  {letter}
+                </div>
+
+                <span className="flex-1 text-sm sm:text-base font-normal leading-relaxed">
+                  {option}
+                </span>
+
+                <div className="shrink-0">
+                  <RadioGroupItem
+                    value={option}
+                    id={`option-${index}`}
+                    className="h-4 w-4 border-border/80 text-primary focus-visible:ring-primary"
+                  />
+                </div>
+              </Label>
+            );
+          })}
         </RadioGroup>
 
+        {/* Instant Explanation Box */}
         {showExplanation && (
-          <div className="mt-4 p-4 bg-muted rounded-lg">
-            <p className="font-medium">Explanation:</p>
-            <p className="text-muted-foreground">{question.explanation}</p>
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-2 animate-in fade-in duration-200">
+            <div className="flex items-center gap-2 text-xs font-semibold text-primary">
+              <Lightbulb className="h-4 w-4 text-amber-500" />
+              <span>AI Evaluation & Context</span>
+            </div>
+            <p className="text-xs sm:text-sm text-foreground/90 leading-relaxed">
+              {question.explanation}
+            </p>
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex justify-between">
-        {!showExplanation && (
-          <Button
-            onClick={() => setShowExplanation(true)}
-            variant="outline"
-            disabled={!answers[currentQuestion]}
-          >
-            Show Explanation
-          </Button>
-        )}
+
+      {/* Footer Navigation */}
+      <CardFooter className="p-5 sm:p-6 border-t border-border/60 bg-card/40 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          {currentQuestion > 0 && (
+            <Button
+              onClick={handlePrevious}
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Previous</span>
+            </Button>
+          )}
+
+          {!showExplanation && (
+            <Button
+              onClick={() => setShowExplanation(true)}
+              variant="ghost"
+              size="sm"
+              disabled={!selectedAnswer}
+              className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <Lightbulb className="h-4 w-4 text-amber-500" />
+              <span>Show Explanation</span>
+            </Button>
+          )}
+        </div>
+
         <Button
           onClick={handleNext}
-          disabled={!answers[currentQuestion] || savingResult}
-          className="ml-auto"
+          disabled={!selectedAnswer || savingResult}
+          className="gap-2 px-5 ml-auto shadow-xs font-medium"
         >
-          {savingResult && (
-              <Loader2 className="w-4 h-4 animate-spin" />
+          {savingResult ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Saving Assessment...</span>
+            </>
+          ) : isLastQuestion ? (
+            <>
+              <span>Finish & View Score</span>
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+            </>
+          ) : (
+            <>
+              <span>Next Question</span>
+              <ArrowRight className="h-4 w-4" />
+            </>
           )}
-          {currentQuestion < quizData.length - 1
-            ? "Next Question"
-            : "Finish Quiz"}
         </Button>
       </CardFooter>
     </Card>

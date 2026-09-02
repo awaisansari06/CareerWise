@@ -1,8 +1,9 @@
 "use client";
 
+import React, { useState, useEffect, useMemo } from "react";
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -16,63 +17,216 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { useTheme } from "next-themes";
+import { TrendingUp, Sparkles, ArrowRight, LineChart as ChartIcon, CheckCircle2 } from "lucide-react";
+import Link from "next/link";
 
 export default function PerformanceChart({ assessments }) {
-  const [chartData, setChartData] = useState([]);
+  const { theme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (assessments) {
-      const formattedData = assessments.map((assessment) => ({
-        date: format(new Date(assessment.createdAt), "MMM dd"),
-        score: assessment.quizScore,
-      }));
-      setChartData(formattedData);
-    }
+    setMounted(true);
+  }, []);
+
+  const isDark = mounted ? resolvedTheme === "dark" || theme === "dark" : true;
+
+  const chartData = useMemo(() => {
+    if (!assessments || assessments.length === 0) return [];
+    return assessments.map((assessment, index) => ({
+      quizNumber: index + 1,
+      name: `Quiz ${index + 1}`,
+      rawDate: assessment.createdAt,
+      date: format(new Date(assessment.createdAt), "MMM d"),
+      fullDate: format(new Date(assessment.createdAt), "MMM d, yyyy · h:mm a"),
+      score: Math.round(assessment.quizScore),
+      questionsCount: assessment.questions?.length || 10,
+    }));
   }, [assessments]);
 
+  const hasEnoughData = chartData.length >= 2;
+
+  // Calculate improvement trend
+  const trendDelta = useMemo(() => {
+    if (!hasEnoughData) return null;
+    const firstScore = chartData[0].score;
+    const lastScore = chartData[chartData.length - 1].score;
+    return lastScore - firstScore;
+  }, [chartData, hasEnoughData]);
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="gradient-title text-3xl md:text-4xl">
-          Performance Trend
-        </CardTitle>
-        <CardDescription>Your quiz scores over time</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis domain={[0, 100]} />
-              <Tooltip
-                content={({ active, payload }) => {
-                  if (active && payload?.length) {
-                    return (
-                      <div className="bg-background border rounded-lg p-2 shadow-md">
-                        <p className="text-sm font-medium">
-                          Score: {payload[0].value}%
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {payload[0].payload.date}
-                        </p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="score"
-                stroke="hsl(var(--primary))"
-                strokeWidth={2}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+    <Card className="border-border/80 bg-card/60 backdrop-blur-sm overflow-hidden">
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              <span>Performance Trend</span>
+            </CardTitle>
+            {hasEnoughData && trendDelta !== null && (
+              <Badge
+                variant={trendDelta >= 0 ? "success" : "warning"}
+                className="text-xs font-semibold"
+              >
+                {trendDelta >= 0 ? `+${trendDelta}% trajectory` : `${trendDelta}% change`}
+              </Badge>
+            )}
+          </div>
+          <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-1">
+            Historical mastery and score evolution across your mock interviews
+          </CardDescription>
         </div>
+
+        {hasEnoughData && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-lg border border-border/50">
+            <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+            <span>{chartData.length} evaluations recorded</span>
+          </div>
+        )}
+      </CardHeader>
+
+      <CardContent>
+        {!hasEnoughData ? (
+          /* Sparse / Empty state */
+          <div className="flex flex-col items-center justify-center py-10 px-4 text-center rounded-xl border border-dashed border-border/70 bg-muted/10">
+            <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-3">
+              <ChartIcon className="h-6 w-6" />
+            </div>
+            <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">
+              {chartData.length === 1
+                ? "1 Interview Completed"
+                : "No Interview Data Yet"}
+            </h3>
+            <p className="text-xs sm:text-sm text-muted-foreground max-w-md mb-5 leading-relaxed">
+              {chartData.length === 1
+                ? "Complete at least one more interview to unlock your dynamic score trend line and track progression over time."
+                : "Take your first mock interview to establish your baseline and begin tracking your interview readiness trajectory."}
+            </p>
+
+            {chartData.length === 1 && (
+              <div className="mb-5 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border text-xs font-medium text-foreground">
+                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                <span>Baseline recorded: <strong>{chartData[0].score}%</strong> on {chartData[0].date}</span>
+              </div>
+            )}
+
+            <Button asChild size="sm" className="gap-2 shadow-xs">
+              <Link href="/interview/mock">
+                <Sparkles className="h-4 w-4 text-amber-400" />
+                <span>{chartData.length === 1 ? "Start 2nd Interview" : "Start First Interview"}</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          /* Actual Performance Trend Chart */
+          <div className="h-[280px] sm:h-[320px] w-full pt-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop
+                      offset="5%"
+                      stopColor={isDark ? "#38bdf8" : "#0284c7"}
+                      stopOpacity={0.35}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor={isDark ? "#38bdf8" : "#0284c7"}
+                      stopOpacity={0.0}
+                    />
+                  </linearGradient>
+                </defs>
+
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke={isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(15, 23, 42, 0.08)"}
+                />
+
+                <XAxis
+                  dataKey="name"
+                  stroke={isDark ? "#94a3b8" : "#64748b"}
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={{ stroke: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(15, 23, 42, 0.1)" }}
+                  dy={8}
+                />
+
+                <YAxis
+                  domain={[0, 100]}
+                  ticks={[0, 25, 50, 75, 100]}
+                  stroke={isDark ? "#94a3b8" : "#64748b"}
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(val) => `${val}%`}
+                  dx={-4}
+                />
+
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="rounded-xl border border-border/80 bg-popover/95 p-3 shadow-xl backdrop-blur-md min-w-[170px]">
+                          <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-2 mb-2">
+                            <span className="font-semibold text-sm text-foreground">
+                              {data.name}
+                            </span>
+                            <Badge
+                              variant={data.score >= 80 ? "success" : data.score >= 50 ? "warning" : "danger"}
+                              className="text-[10px] px-1.5 py-0"
+                            >
+                              {data.score >= 80 ? "Strong" : data.score >= 50 ? "Passed" : "Retake"}
+                            </Badge>
+                          </div>
+                          <div className="space-y-1 text-xs">
+                            <p className="flex justify-between text-muted-foreground">
+                              <span>Score:</span>
+                              <strong className="text-foreground font-semibold text-sm">
+                                {data.score}%
+                              </strong>
+                            </p>
+                            <p className="flex justify-between text-muted-foreground">
+                              <span>Date:</span>
+                              <span className="text-foreground">{data.date}</span>
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+
+                <Area
+                  type="monotone"
+                  dataKey="score"
+                  stroke={isDark ? "#38bdf8" : "#0284c7"}
+                  strokeWidth={2.5}
+                  fillOpacity={1}
+                  fill="url(#scoreGradient)"
+                  dot={{
+                    r: 4,
+                    fill: isDark ? "#0f172a" : "#ffffff",
+                    stroke: isDark ? "#38bdf8" : "#0284c7",
+                    strokeWidth: 2,
+                  }}
+                  activeDot={{
+                    r: 6,
+                    fill: isDark ? "#38bdf8" : "#0284c7",
+                    stroke: isDark ? "#ffffff" : "#0f172a",
+                    strokeWidth: 2,
+                  }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
