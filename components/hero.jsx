@@ -33,8 +33,8 @@ const HeroSection = () => {
     <section className="relative w-full pt-28 sm:pt-36 md:pt-44 pb-12 sm:pb-20 overflow-hidden">
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex flex-col items-center text-center space-y-6 max-w-4xl mx-auto">
-          {/* Top Innovation Pill */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-xs sm:text-sm font-medium text-foreground backdrop-blur-md shadow-xs">
+          {/* Top Innovation Badge */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-xs sm:text-sm font-semibold text-foreground backdrop-blur-md shadow-2xs">
             <Sparkles className="h-3.5 w-3.5 text-amber-500 animate-pulse" />
             <span>Next-Gen AI Career Acceleration Platform</span>
           </div>
@@ -51,14 +51,23 @@ const HeroSection = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-2 w-full sm:w-auto">
-            <Button asChild size="lg" className="w-full sm:w-auto px-8 gap-2 shadow-md hover:shadow-lg font-medium">
+            <Button
+              asChild
+              size="lg"
+              className="w-full sm:w-auto px-8 py-6 text-base font-bold gap-2 shadow-lg hover:shadow-xl transition-all"
+            >
               <Link href="/dashboard">
                 <span>Get Started Free</span>
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>
 
-            <Button asChild size="lg" variant="outline" className="w-full sm:w-auto px-8 font-medium">
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="w-full sm:w-auto px-8 py-6 text-base font-semibold border-border/80 hover:bg-muted/40"
+            >
               <Link href="#features">
                 <span>Explore Features</span>
               </Link>
@@ -66,14 +75,14 @@ const HeroSection = () => {
           </div>
 
           {/* Micro Value Proposition Bar */}
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-2 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-2 text-xs text-muted-foreground font-medium">
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
               <span>Instant ATS Resume Audit</span>
             </span>
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-              <span>Personalized Mock Q&A</span>
+              <span>Role-Specific Mock Q&A</span>
             </span>
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
@@ -82,11 +91,14 @@ const HeroSection = () => {
           </div>
         </div>
 
-        {/* Hero Product Banner Preview */}
-        <div className="hero-image-wrapper mt-10 sm:mt-14 max-w-5xl mx-auto">
+        {/* Hero Product Banner Preview with Subtle Ambient Glow */}
+        <div className="relative hero-image-wrapper mt-12 sm:mt-16 max-w-5xl mx-auto">
+          {/* Subtle Ambient Cyan/Blue Glow behind Image */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-48 bg-sky-500/15 dark:bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+
           <div
             ref={imageRef}
-            className="hero-image rounded-2xl border border-border/80 bg-card/40 p-2 sm:p-3 shadow-2xl backdrop-blur-md"
+            className="relative hero-image rounded-2xl border border-border/80 bg-card/50 p-2 sm:p-3 shadow-2xl backdrop-blur-md"
           >
             <div className="relative overflow-hidden rounded-xl border border-border/60">
               <Image

@@ -19,7 +19,6 @@ import {
   Building2,
   Calendar,
   Loader2,
-  Share2,
   Clock,
   RotateCcw,
 } from "lucide-react";
@@ -124,7 +123,7 @@ export default function CoverLetterPreview({ letter }) {
             asChild
             variant="ghost"
             size="sm"
-            className="gap-2 pl-2 text-muted-foreground hover:text-foreground -ml-2"
+            className="gap-2 pl-2 text-muted-foreground hover:text-foreground -ml-2 font-medium"
           >
             <Link href="/ai-cover-letter">
               <ArrowLeft className="h-4 w-4" />
@@ -133,11 +132,11 @@ export default function CoverLetterPreview({ letter }) {
           </Button>
 
           <div className="flex items-center gap-2">
-            <Badge variant="neutral" className="text-[11px] gap-1">
+            <Badge variant="neutral" className="text-xs font-mono gap-1">
               <Clock className="h-3 w-3 text-muted-foreground" />
               <span>{stats.words} words</span>
             </Badge>
-            <Badge variant="outline" className="text-[11px]">
+            <Badge variant="outline" className="text-xs font-mono">
               {stats.minutes} min read
             </Badge>
           </div>
@@ -145,64 +144,64 @@ export default function CoverLetterPreview({ letter }) {
 
         {/* Title and Workspace Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-border/60 pb-5">
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="gap-1 text-xs font-medium">
-                <Building2 className="h-3 w-3 text-primary" />
+              <Badge variant="outline" className="gap-1.5 text-xs font-semibold bg-muted/40">
+                <Building2 className="h-3.5 w-3.5 text-primary" />
                 <span>{letter.companyName}</span>
               </Badge>
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <span className="text-xs text-muted-foreground font-mono flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
                 <span>{format(new Date(letter.createdAt), "MMMM d, yyyy")}</span>
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
               {letter.jobTitle}
             </h1>
           </div>
 
-          {/* Action Controls Toolbar */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* View / Edit Mode Switcher */}
-            <div className="inline-flex rounded-lg border border-border/80 bg-muted/40 p-1">
+          {/* Action Controls Toolbar (Hierarchical) */}
+          <div className="flex flex-wrap items-center gap-2 pt-1 md:pt-0">
+            {/* 1. Primary: Mode Switcher */}
+            <div className="inline-flex rounded-lg border border-border/80 bg-muted/40 p-1 shadow-2xs">
               <button
                 type="button"
                 onClick={() => setMode("preview")}
-                className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors cursor-pointer ${
                   mode === "preview"
-                    ? "bg-card text-foreground shadow-xs font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-card text-foreground shadow-xs font-bold"
+                    : "text-muted-foreground hover:text-foreground font-medium"
                 }`}
               >
-                <FileText className="h-3.5 w-3.5" />
+                <FileText className="h-3.5 w-3.5 text-primary" />
                 <span>Document</span>
               </button>
               <button
                 type="button"
                 onClick={() => setMode("edit")}
-                className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors cursor-pointer ${
                   mode === "edit"
-                    ? "bg-card text-foreground shadow-xs font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-card text-foreground shadow-xs font-bold"
+                    : "text-muted-foreground hover:text-foreground font-medium"
                 }`}
               >
-                <Edit3 className="h-3.5 w-3.5" />
+                <Edit3 className="h-3.5 w-3.5 text-primary" />
                 <span>Edit Markdown</span>
               </button>
             </div>
 
-            {/* Copy Action */}
+            {/* 2. Utility Actions: Copy */}
             <Button
               variant="outline"
               size="sm"
               onClick={handleCopy}
-              className="gap-1.5 text-xs"
+              className="gap-1.5 text-xs font-semibold"
               title="Copy to clipboard"
             >
               {copied ? (
                 <>
                   <Check className="h-3.5 w-3.5 text-emerald-500" />
-                  <span className="text-emerald-500 font-medium">Copied</span>
+                  <span className="text-emerald-500">Copied</span>
                 </>
               ) : (
                 <>
@@ -212,32 +211,32 @@ export default function CoverLetterPreview({ letter }) {
               )}
             </Button>
 
-            {/* Export Dropdown */}
+            {/* 3. Utility Actions: Export */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs font-semibold">
                   <Download className="h-3.5 w-3.5" />
                   <span>Export</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem
                   onClick={() => handleDownload("txt")}
-                  className="gap-2 cursor-pointer text-xs"
+                  className="gap-2 cursor-pointer text-xs font-medium"
                 >
                   <FileText className="h-3.5 w-3.5 text-muted-foreground" />
                   <span>Download Text (.txt)</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => handleDownload("md")}
-                  className="gap-2 cursor-pointer text-xs"
+                  className="gap-2 cursor-pointer text-xs font-medium"
                 >
                   <Download className="h-3.5 w-3.5 text-muted-foreground" />
                   <span>Download Markdown (.md)</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={handlePrint}
-                  className="gap-2 cursor-pointer text-xs"
+                  className="gap-2 cursor-pointer text-xs font-medium"
                 >
                   <Printer className="h-3.5 w-3.5 text-muted-foreground" />
                   <span>Print to PDF</span>
@@ -245,23 +244,23 @@ export default function CoverLetterPreview({ letter }) {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Regenerate Action */}
+            {/* 4. Secondary Action: Regenerate (Styled as subtle secondary outline, not dominating primary action) */}
             <Button
-              variant="default"
+              variant="outline"
               size="sm"
               onClick={handleRegenerate}
               disabled={regenerating}
-              className="gap-1.5 text-xs shadow-xs"
+              className="gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border-border/80"
               title="Regenerate with Gemini AI"
             >
               {regenerating ? (
                 <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
                   <span>Regenerating...</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                  <RotateCcw className="h-3.5 w-3.5 text-primary" />
                   <span>Regenerate</span>
                 </>
               )}
@@ -270,15 +269,15 @@ export default function CoverLetterPreview({ letter }) {
         </div>
       </div>
 
-      {/* Document Paper Surface */}
-      <div className="w-full flex justify-center py-2">
+      {/* Elevated Document Surface Canvas */}
+      <div className="w-full flex justify-center py-2 sm:py-4">
         {mode === "preview" ? (
           /* High-Contrast Document Paper View */
           <div
             id="printable-cover-letter"
-            className={`w-full max-w-3xl rounded-xl p-6 sm:p-12 md:p-16 transition-all duration-200 ${
+            className={`w-full max-w-3xl rounded-2xl p-8 sm:p-14 md:p-16 transition-all duration-200 ${
               isDark
-                ? "bg-[#0b1329] text-slate-100 border border-slate-800/80 shadow-2xl"
+                ? "bg-[#0e172e] text-slate-100 border border-slate-700/60 shadow-2xl"
                 : "bg-white text-slate-900 border border-slate-200/90 shadow-xl"
             } print:shadow-none print:border-none print:p-0 print:m-0 print:max-w-none print:bg-white print:text-black`}
           >
@@ -294,7 +293,7 @@ export default function CoverLetterPreview({ letter }) {
                   color: isDark ? "#f1f5f9" : "#0f172a",
                   fontFamily: "var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
                   fontSize: "15px",
-                  lineHeight: "1.8",
+                  lineHeight: "1.85",
                 }}
               />
             </div>
@@ -302,7 +301,7 @@ export default function CoverLetterPreview({ letter }) {
         ) : (
           /* Interactive Markdown Editor */
           <div
-            className="w-full max-w-3xl rounded-xl overflow-hidden border border-border/80 shadow-xl"
+            className="w-full max-w-3xl rounded-2xl overflow-hidden border border-border/80 shadow-2xl bg-card"
             data-color-mode={isDark ? "dark" : "light"}
           >
             <MDEditor

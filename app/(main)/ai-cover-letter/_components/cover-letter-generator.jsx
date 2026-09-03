@@ -73,29 +73,29 @@ export default function CoverLetterGenerator() {
   };
 
   return (
-    <Card className="border-border/80 bg-card/70 backdrop-blur-sm shadow-md overflow-hidden">
-      <CardHeader className="border-b border-border/60 pb-4">
-        <div className="flex items-center gap-2 mb-1">
-          <Badge variant="neutral" className="gap-1 text-[11px]">
-            <Sparkles className="h-3 w-3 text-amber-400" />
+    <Card className="border-border/80 bg-card/80 backdrop-blur-sm shadow-xl overflow-hidden">
+      <CardHeader className="border-b border-border/60 pb-5 bg-card/50">
+        <div className="flex items-center gap-2 mb-1.5">
+          <Badge variant="neutral" className="gap-1.5 text-xs font-semibold px-2.5 py-0.5">
+            <Sparkles className="h-3.5 w-3.5 text-amber-400" />
             <span>AI Document Engine</span>
           </Badge>
         </div>
-        <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+        <CardTitle className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
           Target Position Information
         </CardTitle>
-        <CardDescription className="text-xs sm:text-sm text-muted-foreground">
-          Provide the employer and role information. CareerWise AI will synthesize your resume achievements directly into a persuasive, professional cover letter.
+        <CardDescription className="text-xs sm:text-sm text-muted-foreground leading-relaxed mt-1">
+          Provide the employer and role requirements. CareerWise AI will cross-reference your verified resume background to synthesize a persuasive, tailored cover letter.
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="pt-6">
-        <form id="cover-letter-form" onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          {/* Company & Job Title Row */}
-          <div className="grid sm:grid-cols-2 gap-4">
+      <CardContent className="pt-6 sm:p-8">
+        <form id="cover-letter-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Company & Job Title Grid */}
+          <div className="grid sm:grid-cols-2 gap-5">
             {/* Company Name */}
             <div className="space-y-2">
-              <Label htmlFor="companyName" className="text-xs sm:text-sm font-medium flex items-center gap-1.5 text-foreground">
+              <Label htmlFor="companyName" className="text-xs sm:text-sm font-semibold flex items-center gap-1.5 text-foreground">
                 <Building2 className="h-3.5 w-3.5 text-primary" />
                 <span>Company Name</span>
                 <span className="text-destructive">*</span>
@@ -104,7 +104,9 @@ export default function CoverLetterGenerator() {
                 id="companyName"
                 placeholder="e.g., Google, Stripe, Microsoft"
                 aria-invalid={!!errors.companyName}
-                className={errors.companyName ? "border-destructive focus-visible:ring-destructive/30" : ""}
+                className={`h-10 text-sm ${
+                  errors.companyName ? "border-destructive focus-visible:ring-destructive/30" : ""
+                }`}
                 {...register("companyName")}
               />
               {errors.companyName ? (
@@ -119,9 +121,9 @@ export default function CoverLetterGenerator() {
               )}
             </div>
 
-            {/* Job Title */}
+            {/* Target Job Title */}
             <div className="space-y-2">
-              <Label htmlFor="jobTitle" className="text-xs sm:text-sm font-medium flex items-center gap-1.5 text-foreground">
+              <Label htmlFor="jobTitle" className="text-xs sm:text-sm font-semibold flex items-center gap-1.5 text-foreground">
                 <Briefcase className="h-3.5 w-3.5 text-primary" />
                 <span>Target Job Title</span>
                 <span className="text-destructive">*</span>
@@ -130,7 +132,9 @@ export default function CoverLetterGenerator() {
                 id="jobTitle"
                 placeholder="e.g., Senior Software Engineer"
                 aria-invalid={!!errors.jobTitle}
-                className={errors.jobTitle ? "border-destructive focus-visible:ring-destructive/30" : ""}
+                className={`h-10 text-sm ${
+                  errors.jobTitle ? "border-destructive focus-visible:ring-destructive/30" : ""
+                }`}
                 {...register("jobTitle")}
               />
               {errors.jobTitle ? (
@@ -140,7 +144,7 @@ export default function CoverLetterGenerator() {
                 </p>
               ) : (
                 <p className="text-[11px] text-muted-foreground">
-                  The exact title as listed in the job posting
+                  The exact title as listed on the vacancy
                 </p>
               )}
             </div>
@@ -149,21 +153,21 @@ export default function CoverLetterGenerator() {
           {/* Job Description Textarea */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="jobDescription" className="text-xs sm:text-sm font-medium flex items-center gap-1.5 text-foreground">
+              <Label htmlFor="jobDescription" className="text-xs sm:text-sm font-semibold flex items-center gap-1.5 text-foreground">
                 <FileText className="h-3.5 w-3.5 text-primary" />
                 <span>Job Description & Requirements</span>
                 <span className="text-destructive">*</span>
               </Label>
-              <span className="text-[11px] text-muted-foreground">
-                Paste requirements
+              <span className="text-[11px] text-muted-foreground font-mono">
+                Paste posting text
               </span>
             </div>
 
             <Textarea
               id="jobDescription"
-              placeholder="Paste the full job description, required skills, and key responsibilities here..."
-              rows={7}
-              className={`min-h-[160px] text-sm leading-relaxed ${
+              placeholder="Paste the full job description, core responsibilities, and required qualifications here..."
+              rows={8}
+              className={`min-h-[180px] text-sm leading-relaxed ${
                 errors.jobDescription ? "border-destructive focus-visible:ring-destructive/30" : ""
               }`}
               aria-invalid={!!errors.jobDescription}
@@ -177,24 +181,24 @@ export default function CoverLetterGenerator() {
               </p>
             ) : (
               <p className="text-[11px] text-muted-foreground">
-                Tip: Include core responsibilities and technical qualifications for the most targeted letter.
+                Tip: The more detailed the requirements, the more specifically the AI maps your resume achievements.
               </p>
             )}
           </div>
 
-          {/* Context Banner */}
-          <div className="flex items-start gap-2.5 rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground border border-border/50">
+          {/* Context Explainer Banner */}
+          <div className="flex items-start gap-3 rounded-xl bg-muted/30 p-3.5 text-xs text-muted-foreground border border-border/60">
             <Zap className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-            <p>
-              The AI automatically cross-references your uploaded resume achievements and skills to write authentic, evidence-based paragraphs without boilerplate placeholders.
+            <p className="leading-relaxed">
+              CareerWise AI extracts key accomplishments, quantifiable impact metrics, and tech stack proficiencies from your profile to write compelling paragraphs with zero generic filler.
             </p>
           </div>
         </form>
       </CardContent>
 
-      <CardFooter className="border-t border-border/60 bg-muted/10 p-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <CardFooter className="border-t border-border/60 bg-muted/10 p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <p className="text-xs text-muted-foreground text-center sm:text-left">
-          Ready to generate an ATS-tailored draft
+          Outputs an ATS-tailored, editable Markdown document
         </p>
 
         <Button
@@ -202,17 +206,17 @@ export default function CoverLetterGenerator() {
           form="cover-letter-form"
           disabled={generating}
           size="lg"
-          className="w-full sm:w-auto gap-2 px-7 font-medium shadow-xs"
+          className="w-full sm:w-auto gap-2 px-8 py-6 font-bold shadow-md hover:shadow-lg transition-all"
         >
           {generating ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin text-primary-foreground" />
-              <span>Generating Cover Letter...</span>
+              <span>Synthesizing Cover Letter...</span>
             </>
           ) : (
             <>
               <Sparkles className="h-4 w-4 text-amber-400" />
-              <span>Generate Cover Letter</span>
+              <span>Generate AI Cover Letter</span>
             </>
           )}
         </Button>

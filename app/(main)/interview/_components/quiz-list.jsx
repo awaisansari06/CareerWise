@@ -50,33 +50,33 @@ export default function QuizList({ assessments }) {
 
   return (
     <>
-      <Card className="border-border/80 bg-card/60 backdrop-blur-sm">
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4">
+      <Card className="border-border/80 bg-card/70 backdrop-blur-sm">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-border/60">
           <div>
-            <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <CardTitle className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
               <History className="h-5 w-5 text-primary" />
               <span>Assessment History</span>
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-1">
-              Review past mock interview attempts, scoring breakdowns, and AI feedback
+              Review past mock interview attempts, scoring breakdowns, and AI feedback.
             </CardDescription>
           </div>
           <Button
             onClick={() => router.push("/interview/mock")}
-            className="gap-2 self-start sm:self-auto shadow-xs"
+            className="gap-2 self-start sm:self-auto shadow-xs font-medium"
           >
             <Plus className="h-4 w-4" />
             <span>Start New Quiz</span>
           </Button>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="pt-6">
           {!hasAssessments ? (
-            <div className="flex flex-col items-center justify-center py-12 px-4 text-center rounded-xl border border-dashed border-border/70 bg-muted/10">
+            <div className="flex flex-col items-center justify-center py-12 px-4 text-center rounded-xl border border-dashed border-border/80 bg-muted/10">
               <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-3">
                 <FileQuestion className="h-6 w-6" />
               </div>
-              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">
+              <h3 className="text-base sm:text-lg font-bold text-foreground mb-1">
                 No Quizzes Completed Yet
               </h3>
               <p className="text-xs sm:text-sm text-muted-foreground max-w-sm mb-5 leading-relaxed">
@@ -84,7 +84,7 @@ export default function QuizList({ assessments }) {
               </p>
               <Button
                 onClick={() => router.push("/interview/mock")}
-                className="gap-2"
+                className="gap-2 font-medium"
                 size="sm"
               >
                 <Sparkles className="h-4 w-4 text-amber-400" />
@@ -92,8 +92,8 @@ export default function QuizList({ assessments }) {
               </Button>
             </div>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
-              {reversedAssessments.map((assessment, displayIndex) => {
+            <div className="grid gap-3.5 sm:grid-cols-2">
+              {reversedAssessments.map((assessment) => {
                 const chronologicalIndex = assessments.indexOf(assessment) + 1;
                 const score = Number(assessment.quizScore.toFixed(1));
                 const status = getScoreStatus(score);
@@ -103,20 +103,20 @@ export default function QuizList({ assessments }) {
                 return (
                   <div
                     key={assessment.id}
-                    className="group relative flex flex-col justify-between rounded-xl border border-border/70 bg-card/80 p-4 transition-all duration-200 hover:border-primary/40 hover:bg-card hover:shadow-md cursor-pointer"
+                    className="group relative flex flex-col justify-between rounded-xl border border-border/70 bg-card p-4 transition-all duration-200 hover:border-primary/50 hover:shadow-md cursor-pointer"
                     onClick={() => setSelectedQuiz(assessment)}
                   >
                     {/* Top Row: Quiz # and Status */}
                     <div className="flex items-center justify-between gap-2 mb-3">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-base text-foreground group-hover:text-primary transition-colors">
+                        <span className="font-bold text-base text-foreground group-hover:text-primary transition-colors">
                           Quiz #{chronologicalIndex}
                         </span>
                         <span className="text-xs text-muted-foreground">
                           • {format(new Date(assessment.createdAt), "MMM d, yyyy")}
                         </span>
                       </div>
-                      <Badge variant={status.variant} className="text-[11px] font-medium">
+                      <Badge variant={status.variant} className="text-[11px] font-semibold">
                         {status.label}
                       </Badge>
                     </div>
@@ -124,11 +124,11 @@ export default function QuizList({ assessments }) {
                     {/* Middle Row: Score & Performance Summary */}
                     <div className="space-y-2 mb-3">
                       <div className="flex items-baseline justify-between">
-                        <div className="flex items-baseline gap-1.5">
-                          <span className="text-2xl font-bold tracking-tight text-foreground">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-2xl font-extrabold tracking-tight text-foreground font-mono">
                             {score}%
                           </span>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-muted-foreground font-medium">
                             ({correctCount}/{questionCount} correct)
                           </span>
                         </div>
@@ -142,14 +142,14 @@ export default function QuizList({ assessments }) {
 
                     {/* AI Tip Snippet if available */}
                     {assessment.improvementTip && (
-                      <div className="mb-3.5 flex items-start gap-2 rounded-lg bg-muted/40 p-2 text-xs text-muted-foreground border border-border/40 line-clamp-2">
+                      <div className="mb-3.5 flex items-start gap-2 rounded-lg bg-muted/40 p-2.5 text-xs text-muted-foreground border border-border/40">
                         <Lightbulb className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
                         <span className="line-clamp-1">{assessment.improvementTip}</span>
                       </div>
                     )}
 
                     {/* Action Link */}
-                    <div className="mt-auto pt-2 border-t border-border/40 flex items-center justify-between text-xs font-medium text-primary">
+                    <div className="mt-auto pt-2.5 border-t border-border/40 flex items-center justify-between text-xs font-semibold text-primary">
                       <span>View Full Breakdown</span>
                       <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </div>

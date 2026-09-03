@@ -58,13 +58,13 @@ export default function PerformanceChart({ assessments }) {
   }, [chartData, hasEnoughData]);
 
   return (
-    <Card className="border-border/80 bg-card/60 backdrop-blur-sm overflow-hidden">
-      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-4">
+    <Card className="border-border/80 bg-card/70 backdrop-blur-sm overflow-hidden">
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-border/60">
         <div>
           <div className="flex items-center gap-2">
-            <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <CardTitle className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-primary" />
-              <span>Performance Trend</span>
+              <span>Performance Trajectory</span>
             </CardTitle>
             {hasEnoughData && trendDelta !== null && (
               <Badge
@@ -76,54 +76,61 @@ export default function PerformanceChart({ assessments }) {
             )}
           </div>
           <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Historical mastery and score evolution across your mock interviews
+            Historical score progression and mastery consistency across your completed interviews.
           </CardDescription>
         </div>
 
         {hasEnoughData && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-lg border border-border/50">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 px-3 py-1.5 rounded-lg border border-border/60 shrink-0 self-start sm:self-auto">
             <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
             <span>{chartData.length} evaluations recorded</span>
           </div>
         )}
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="pt-6">
         {!hasEnoughData ? (
-          /* Sparse / Empty state */
-          <div className="flex flex-col items-center justify-center py-10 px-4 text-center rounded-xl border border-dashed border-border/70 bg-muted/10">
-            <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-3">
-              <ChartIcon className="h-6 w-6" />
+          /* Compact Sparse / Empty state */
+          <div className="flex flex-col items-center justify-center py-8 px-4 text-center rounded-xl border border-dashed border-border/80 bg-muted/10 space-y-3">
+            <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <ChartIcon className="h-5 w-5" />
             </div>
-            <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">
-              {chartData.length === 1
-                ? "1 Interview Completed"
-                : "No Interview Data Yet"}
-            </h3>
-            <p className="text-xs sm:text-sm text-muted-foreground max-w-md mb-5 leading-relaxed">
-              {chartData.length === 1
-                ? "Complete at least one more interview to unlock your dynamic score trend line and track progression over time."
-                : "Take your first mock interview to establish your baseline and begin tracking your interview readiness trajectory."}
-            </p>
+
+            <div className="space-y-1">
+              <h3 className="text-base font-bold text-foreground">
+                {chartData.length === 1
+                  ? "1 Assessment Completed"
+                  : "Performance Trend Locked"}
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground max-w-md leading-relaxed">
+                {chartData.length === 1
+                  ? "Complete at least one more interview to unlock your dynamic performance trend line and track progression over time."
+                  : "Take your first mock interview to establish your baseline and begin tracking your interview readiness trajectory."}
+              </p>
+            </div>
 
             {chartData.length === 1 && (
-              <div className="mb-5 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border text-xs font-medium text-foreground">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                <span>Baseline recorded: <strong>{chartData[0].score}%</strong> on {chartData[0].date}</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-card border border-border/80 text-xs text-foreground font-medium shadow-xs">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                <span>
+                  Baseline: <strong>{chartData[0].score}%</strong> recorded on {chartData[0].date}
+                </span>
               </div>
             )}
 
-            <Button asChild size="sm" className="gap-2 shadow-xs">
-              <Link href="/interview/mock">
-                <Sparkles className="h-4 w-4 text-amber-400" />
-                <span>{chartData.length === 1 ? "Start 2nd Interview" : "Start First Interview"}</span>
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </Button>
+            <div className="pt-1">
+              <Button asChild size="sm" className="gap-2 shadow-xs font-medium">
+                <Link href="/interview/mock">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                  <span>{chartData.length === 1 ? "Start 2nd Interview" : "Start First Interview"}</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            </div>
           </div>
         ) : (
           /* Actual Performance Trend Chart */
-          <div className="h-[280px] sm:h-[320px] w-full pt-2">
+          <div className="h-[280px] sm:h-[320px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
@@ -154,6 +161,7 @@ export default function PerformanceChart({ assessments }) {
                   tickLine={false}
                   axisLine={{ stroke: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(15, 23, 42, 0.1)" }}
                   dy={8}
+                  fontWeight={500}
                 />
 
                 <YAxis
@@ -165,6 +173,7 @@ export default function PerformanceChart({ assessments }) {
                   axisLine={false}
                   tickFormatter={(val) => `${val}%`}
                   dx={-4}
+                  fontWeight={500}
                 />
 
                 <Tooltip
@@ -172,9 +181,9 @@ export default function PerformanceChart({ assessments }) {
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
                       return (
-                        <div className="rounded-xl border border-border/80 bg-popover/95 p-3 shadow-xl backdrop-blur-md min-w-[170px]">
+                        <div className="rounded-xl border border-border/80 bg-popover/95 p-3.5 shadow-xl backdrop-blur-md min-w-[180px]">
                           <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-2 mb-2">
-                            <span className="font-semibold text-sm text-foreground">
+                            <span className="font-bold text-sm text-foreground">
                               {data.name}
                             </span>
                             <Badge
@@ -187,13 +196,13 @@ export default function PerformanceChart({ assessments }) {
                           <div className="space-y-1 text-xs">
                             <p className="flex justify-between text-muted-foreground">
                               <span>Score:</span>
-                              <strong className="text-foreground font-semibold text-sm">
+                              <strong className="text-foreground font-bold text-sm font-mono">
                                 {data.score}%
                               </strong>
                             </p>
                             <p className="flex justify-between text-muted-foreground">
                               <span>Date:</span>
-                              <span className="text-foreground">{data.date}</span>
+                              <span className="text-foreground font-medium">{data.date}</span>
                             </p>
                           </div>
                         </div>

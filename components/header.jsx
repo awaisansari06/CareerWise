@@ -18,24 +18,24 @@ export default async function Header() {
 
   return (
     <header className="fixed top-0 w-full border-b border-border/80 bg-background/85 backdrop-blur-md z-50 transition-colors duration-200">
-      <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
+      <nav className="container mx-auto px-3 sm:px-4 h-16 flex items-center justify-between">
         {/* Brand Logo */}
-        <Link href={!isSignedIn ? "/" : "/onboarding"} className="flex items-center gap-2 group">
+        <Link href={!isSignedIn ? "/" : "/onboarding"} className="flex items-center gap-2 group shrink-0">
           <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary transition-transform group-hover:scale-105 duration-200">
             <Sparkles className="h-4 w-4" />
           </div>
           <div className="flex items-center">
-            <span className="font-extrabold text-lg md:text-xl tracking-tight text-foreground">
+            <span className="font-extrabold text-base sm:text-lg md:text-xl tracking-tight text-foreground">
               CAREERWISE
             </span>
-            <span className="ml-1.5 text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-primary text-primary-foreground">
+            <span className="ml-1 sm:ml-1.5 text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-primary text-primary-foreground">
               AI
             </span>
           </div>
         </Link>
 
         {/* Action Controls */}
-        <div className="flex items-center space-x-2 sm:space-x-3">
+        <div className="flex items-center space-x-1.5 sm:space-x-3 shrink-0">
           <SignedIn>
             <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex gap-2">
               <Link href="/dashboard">
@@ -43,7 +43,7 @@ export default async function Header() {
                 <span>Dashboard</span>
               </Link>
             </Button>
-            <Button asChild variant="outline" size="icon" className="sm:hidden h-9 w-9" title="Dashboard">
+            <Button asChild variant="outline" size="icon" className="sm:hidden h-8 w-8" title="Dashboard">
               <Link href="/dashboard">
                 <LayoutDashboard className="h-4 w-4" />
                 <span className="sr-only">Dashboard</span>
@@ -52,7 +52,7 @@ export default async function Header() {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="default" size="sm" className="gap-1.5">
+                <Button variant="default" size="sm" className="gap-1 sm:gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
                   <span className="hidden sm:inline">AI Tools</span>
                   <span className="sm:hidden">Tools</span>
                   <ChevronDown className="h-3.5 w-3.5 opacity-70" />
@@ -110,7 +110,7 @@ export default async function Header() {
             <UserButton
               appearance={{
                 elements: {
-                  avatarBox: "!w-9 !h-9 border border-border/80",
+                  avatarBox: "!w-8 !h-8 sm:!w-9 sm:!h-9 border border-border/80",
                   userButtonPopoverCard: "shadow-xl p-4 bg-popover text-popover-foreground rounded-xl border border-border",
                   userPreviewMainIdentifier: "text-sm font-semibold text-foreground",
                   userButtonTrigger: "hover:scale-105 transition-transform duration-200",
@@ -123,12 +123,12 @@ export default async function Header() {
 
           <SignedOut>
             <SignInButton asChild>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="px-2.5 sm:px-3 text-xs sm:text-sm">
                 Sign In
               </Button>
             </SignInButton>
             <SignUpButton asChild>
-              <Button variant="default" size="sm">
+              <Button variant="default" size="sm" className="px-2.5 sm:px-3 text-xs sm:text-sm">
                 Sign Up
               </Button>
             </SignUpButton>

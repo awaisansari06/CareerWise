@@ -112,7 +112,7 @@ export default function Quiz() {
   // 1. AI Question Generation Loading State
   if (generatingQuiz) {
     return (
-      <Card className="border-border/80 bg-card/60 backdrop-blur-sm p-8 sm:p-12 text-center">
+      <Card className="border-border/80 bg-card/70 backdrop-blur-sm p-8 sm:p-12 text-center">
         <div className="flex flex-col items-center justify-center space-y-4 max-w-md mx-auto">
           <div className="relative">
             <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
@@ -129,13 +129,13 @@ export default function Quiz() {
               Synthesizing Interview Rubric
             </h3>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              CareerWise AI is analyzing your resume profile to formulate 10 personalized technical, conceptual, and situational questions.
+              CareerWise AI is evaluating your resume background to generate 10 tailored technical, conceptual, and situational interview questions.
             </p>
           </div>
 
           <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2">
             <Loader2 className="h-4 w-4 animate-spin text-primary" />
-            <span>Tailoring question scenarios...</span>
+            <span>Formulating role-targeted questions...</span>
           </div>
         </div>
       </Card>
@@ -154,19 +154,19 @@ export default function Quiz() {
   // 3. Mock Interview Readiness / Briefing Card (Empty State before starting)
   if (!quizData) {
     return (
-      <Card className="border-border/80 bg-card/60 backdrop-blur-sm overflow-hidden">
+      <Card className="border-border/80 bg-card/70 backdrop-blur-sm overflow-hidden shadow-lg">
         <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border/60 p-6 sm:p-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1.5">
-              <Badge variant="neutral" className="gap-1 mb-1">
-                <Sparkles className="h-3 w-3 text-amber-400" />
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                <Sparkles className="h-3.5 w-3.5 text-amber-500" />
                 <span>AI Proctor Assessment</span>
-              </Badge>
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
                 Interview Readiness Briefing
               </h2>
-              <p className="text-xs sm:text-sm text-muted-foreground max-w-xl">
-                Simulate a real-world technical and situational interview tailored directly to your resume background and career domain.
+              <p className="text-xs sm:text-sm text-muted-foreground max-w-xl leading-relaxed">
+                Simulate a real-world technical and situational interview tailored directly to your resume background and career discipline.
               </p>
             </div>
           </div>
@@ -175,26 +175,26 @@ export default function Quiz() {
         <CardContent className="p-6 sm:p-8 space-y-6">
           {/* Key Specifications Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-            <div className="rounded-xl border border-border/70 bg-card/60 p-3 sm:p-4 space-y-1">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <div className="rounded-xl border border-border/70 bg-card p-3.5 sm:p-4 space-y-1 shadow-2xs">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
                 <HelpCircle className="h-3.5 w-3.5 text-sky-500" />
                 <span>Questions</span>
               </div>
-              <p className="text-lg sm:text-xl font-bold text-foreground">10 Items</p>
+              <p className="text-lg sm:text-xl font-bold text-foreground font-mono">10 Items</p>
               <p className="text-[11px] text-muted-foreground">Multiple Choice</p>
             </div>
 
-            <div className="rounded-xl border border-border/70 bg-card/60 p-3 sm:p-4 space-y-1">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <div className="rounded-xl border border-border/70 bg-card p-3.5 sm:p-4 space-y-1 shadow-2xs">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
                 <Clock className="h-3.5 w-3.5 text-indigo-500" />
                 <span>Duration</span>
               </div>
-              <p className="text-lg sm:text-xl font-bold text-foreground">~15 Mins</p>
+              <p className="text-lg sm:text-xl font-bold text-foreground font-mono">~15 Mins</p>
               <p className="text-[11px] text-muted-foreground">Self-paced</p>
             </div>
 
-            <div className="rounded-xl border border-border/70 bg-card/60 p-3 sm:p-4 space-y-1">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <div className="rounded-xl border border-border/70 bg-card p-3.5 sm:p-4 space-y-1 shadow-2xs">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
                 <Target className="h-3.5 w-3.5 text-amber-500" />
                 <span>Target Level</span>
               </div>
@@ -202,8 +202,8 @@ export default function Quiz() {
               <p className="text-[11px] text-muted-foreground">Resume Aligned</p>
             </div>
 
-            <div className="rounded-xl border border-border/70 bg-card/60 p-3 sm:p-4 space-y-1">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <div className="rounded-xl border border-border/70 bg-card p-3.5 sm:p-4 space-y-1 shadow-2xs">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
                 <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
                 <span>Feedback</span>
               </div>
@@ -214,7 +214,7 @@ export default function Quiz() {
 
           {/* Assessment Scope */}
           <div className="rounded-xl border border-border/60 bg-muted/20 p-4 sm:p-5 space-y-3">
-            <h4 className="text-xs sm:text-sm font-semibold text-foreground uppercase tracking-wider">
+            <h4 className="text-xs sm:text-sm font-bold text-foreground uppercase tracking-wider">
               What This Assessment Evaluates
             </h4>
             <div className="grid sm:grid-cols-2 gap-2.5 text-xs sm:text-sm text-muted-foreground">
@@ -237,23 +237,24 @@ export default function Quiz() {
             </div>
           </div>
 
-          {/* Guidelines */}
-          <div className="flex items-start gap-3 text-xs text-muted-foreground bg-primary/5 rounded-lg p-3.5 border border-primary/15">
+          {/* Guidelines Banner */}
+          <div className="flex items-start gap-3 text-xs text-muted-foreground bg-primary/5 rounded-xl p-4 border border-primary/20">
             <Zap className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-            <p>
-              You can toggle real-time AI explanations after selecting an answer, or proceed directly through the interview and review all questions at the conclusion.
+            <p className="leading-relaxed">
+              You can toggle real-time AI explanations after selecting an answer, or proceed directly through the assessment and review all 10 questions at the conclusion.
             </p>
           </div>
         </CardContent>
 
-        <CardFooter className="p-6 sm:p-8 pt-0 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border/60 bg-card/30">
-          <p className="text-xs text-muted-foreground">
-            Scores are permanently saved to your performance trajectory
+        {/* Prominent Start CTA Footer */}
+        <CardFooter className="p-6 sm:p-8 pt-0 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border/60 bg-card/40">
+          <p className="text-xs text-muted-foreground text-center sm:text-left">
+            Your results will be permanently recorded in your performance trajectory
           </p>
           <Button
             size="lg"
             onClick={generateQuizFn}
-            className="w-full sm:w-auto gap-2 px-8 shadow-md"
+            className="w-full sm:w-auto gap-2 px-8 py-6 text-base font-bold shadow-lg hover:shadow-xl transition-all"
           >
             <Sparkles className="h-4 w-4 text-amber-400" />
             <span>Start Mock Interview</span>
@@ -270,21 +271,22 @@ export default function Quiz() {
   const progressPercent = Math.round(((currentQuestion + 1) / quizData.length) * 100);
   const selectedAnswer = answers[currentQuestion];
   const optionLetters = ["A", "B", "C", "D"];
+  const remainingCount = quizData.length - (currentQuestion + 1);
 
   return (
-    <Card className="border-border/80 bg-card/60 backdrop-blur-sm overflow-hidden shadow-lg">
+    <Card className="border-border/80 bg-card/70 backdrop-blur-sm overflow-hidden shadow-xl">
       {/* Quiz Progress Header */}
-      <div className="p-4 sm:p-6 border-b border-border/60 bg-card/40 space-y-3">
+      <div className="p-4 sm:p-6 border-b border-border/60 bg-card/50 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Badge variant="neutral" className="text-xs font-semibold px-2.5 py-0.5">
+            <Badge variant="neutral" className="text-xs font-bold px-3 py-1">
               Question {currentQuestion + 1} of {quizData.length}
             </Badge>
             <span className="text-xs text-muted-foreground hidden sm:inline">
-              • Practice Mode
+              • {remainingCount > 0 ? `${remainingCount} remaining` : "Final question"}
             </span>
           </div>
-          <span className="text-xs font-mono font-medium text-muted-foreground">
+          <span className="text-xs font-mono font-bold text-muted-foreground">
             {progressPercent}% completed
           </span>
         </div>
@@ -294,7 +296,7 @@ export default function Quiz() {
       <CardContent className="p-5 sm:p-8 space-y-6">
         {/* Question Text */}
         <div className="space-y-2">
-          <h2 className="text-lg sm:text-xl md:text-2xl font-semibold tracking-tight text-foreground leading-snug">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-foreground leading-snug">
             {question.question}
           </h2>
         </div>
@@ -313,9 +315,9 @@ export default function Quiz() {
               <Label
                 key={index}
                 htmlFor={`option-${index}`}
-                className={`flex items-center gap-3.5 p-4 rounded-xl border transition-all duration-150 cursor-pointer select-none ${
+                className={`flex items-center gap-3.5 p-4 rounded-xl border transition-all duration-150 cursor-pointer select-none min-h-[56px] ${
                   isSelected
-                    ? "border-primary bg-primary/10 dark:bg-primary/15 ring-2 ring-primary/40 shadow-sm text-foreground"
+                    ? "border-primary bg-primary/10 dark:bg-primary/15 ring-2 ring-primary/40 shadow-sm text-foreground font-medium"
                     : "border-border/70 bg-card/60 hover:border-primary/40 hover:bg-muted/30 text-foreground"
                 }`}
               >
@@ -329,7 +331,7 @@ export default function Quiz() {
                   {letter}
                 </div>
 
-                <span className="flex-1 text-sm sm:text-base font-normal leading-relaxed">
+                <span className="flex-1 text-sm sm:text-base leading-relaxed">
                   {option}
                 </span>
 
@@ -348,7 +350,7 @@ export default function Quiz() {
         {/* Instant Explanation Box */}
         {showExplanation && (
           <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-2 animate-in fade-in duration-200">
-            <div className="flex items-center gap-2 text-xs font-semibold text-primary">
+            <div className="flex items-center gap-2 text-xs font-bold text-primary">
               <Lightbulb className="h-4 w-4 text-amber-500" />
               <span>AI Evaluation & Context</span>
             </div>
@@ -391,7 +393,7 @@ export default function Quiz() {
         <Button
           onClick={handleNext}
           disabled={!selectedAnswer || savingResult}
-          className="gap-2 px-5 ml-auto shadow-xs font-medium"
+          className="gap-2 px-6 ml-auto shadow-md font-bold"
         >
           {savingResult ? (
             <>
