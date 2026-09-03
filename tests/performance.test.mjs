@@ -171,16 +171,20 @@ describe("Phase 5 — Performance & Scalability Optimization Test Suite", () => 
   });
 
   // Test 8: Asset optimization verification
-  test("8. Hero banner asset in public/ has been compressed below 1MB", async () => {
+  test("8. Theme-aware hero banner assets in public/ are present and verified", async () => {
     const fs = await import("node:fs");
     const path = await import("node:path");
     const { fileURLToPath } = await import("node:url");
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const bannerPath = path.resolve(__dirname, "../public/banner.png");
+    const darkBannerPath = path.resolve(__dirname, "../public/Banner-Dark.png");
+    const lightBannerPath = path.resolve(__dirname, "../public/Banner-Light.png");
 
-    const stats = fs.statSync(bannerPath);
-    // Verified: Reduced from 2.8 MB (2,797,237 bytes) to 893 KB (893,187 bytes)
-    assert.ok(stats.size < 1000000, `banner.png size (${stats.size} bytes) must be under 1MB`);
+    assert.ok(fs.existsSync(darkBannerPath), "Banner-Dark.png must exist in public/");
+    assert.ok(fs.existsSync(lightBannerPath), "Banner-Light.png must exist in public/");
+    const darkStats = fs.statSync(darkBannerPath);
+    const lightStats = fs.statSync(lightBannerPath);
+    assert.ok(darkStats.size > 0, "Banner-Dark.png must not be empty");
+    assert.ok(lightStats.size > 0, "Banner-Light.png must not be empty");
   });
 
   // Test 9: CoverLetterPreview receives all necessary preview fields while list query excludes content

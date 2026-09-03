@@ -49,7 +49,7 @@ export default function LandingPage() {
         "@id": `${siteConfig.url}/#organization`,
         name: siteConfig.name,
         url: siteConfig.url,
-        logo: `${siteConfig.url}/banner.png`,
+        logo: `${siteConfig.url}/icon.svg`,
         description: siteConfig.descriptor,
       },
       {
