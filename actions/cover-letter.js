@@ -2,15 +2,28 @@
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+import {
+  getGeminiModel,
+  safeGenerateContent,
+  formatUntrustedData,
+  PROMPT_SAFETY_DIRECTIVE,
+  CoverLetterInputSchema,
+} from "@/lib/gemini";
 
 export async function generateCoverLetter(data) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
+  // Step 1: Strict input validation before any processing or AI calls
+  const validation = CoverLetterInputSchema.safeParse(data);
+  if (!validation.success) {
+    const issue = validation.error.issues[0]?.message || "Invalid cover letter input";
+    throw new Error(issue);
+  }
+
+  const { jobTitle, companyName, jobDescription } = validation.data;
+
+  // Step 2: Ensure authenticated user and resume exist
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
     include: { resume: true },
@@ -19,7 +32,12 @@ export async function generateCoverLetter(data) {
   if (!user) throw new Error("User not found");
   if (!user.resume) throw new Error("Resume not uploaded");
 
-  const resume = JSON.parse(user.resume.content);
+  let resume = {};
+  try {
+    resume = typeof user.resume.content === "string" ? JSON.parse(user.resume.content) : user.resume.content;
+  } catch {
+    resume = {};
+  }
 
   const currentDate = new Date().toLocaleDateString("en-US", {
     month: "long",
@@ -27,26 +45,38 @@ export async function generateCoverLetter(data) {
     year: "numeric",
   });
 
+  const candidateInfo = {
+    name: resume.name || "",
+    email: resume.email || "",
+    phone: resume.phone || "",
+    education: resume.education || [],
+    experience: resume.experience || [],
+    skills: resume.skills || [],
+    projects: resume.projects || [],
+    languages: resume.languages || [],
+  };
+
+  const model = getGeminiModel();
+
   const prompt = `
-Write a professional cover letter for the ${data.jobTitle} position at ${data.companyName}.
+You are a professional executive career coach.
+
+${PROMPT_SAFETY_DIRECTIVE}
+
+Write a professional cover letter for the specified target role and company based on the candidate's background.
+
+TARGET ROLE & COMPANY:
+${formatUntrustedData("target_job_title", jobTitle)}
+${formatUntrustedData("target_company_name", companyName)}
+
+TARGET JOB DESCRIPTION:
+${formatUntrustedData("job_description", jobDescription)}
+
+CANDIDATE PROFILE DATA:
+${formatUntrustedData("candidate_resume", candidateInfo)}
 
 Date:
 ${currentDate}
-
-Header:
-${resume.name || ""}
-${resume.email || ""}
-${resume.phone || ""}
-
-Candidate Information (from resume):
-${resume.education?.length ? "- Education: " + resume.education.join("; ") : ""}
-${resume.experience?.length ? "- Experience: " + resume.experience.join("; ") : ""}
-${resume.skills?.length ? "- Skills: " + resume.skills.join(", ") : ""}
-${resume.projects?.length ? "- Projects: " + resume.projects.join("; ") : ""}
-${resume.languages?.length ? "- Languages: " + resume.languages.join(", ") : ""}
-
-Job Description:
-${data.jobDescription}
 
 Requirements:
 1. Use a professional, enthusiastic tone
@@ -60,29 +90,31 @@ Requirements:
 Format the letter in markdown. The date of the letter must be "${currentDate}". Do not insert placeholder text like [Your Name] or [Your Address].
 `;
 
-
   try {
-    const result = await model.generateContent(prompt);
+    const result = await safeGenerateContent(model, prompt);
     const content = result.response.text().trim();
+
+    if (!content) {
+      throw new Error("AI returned empty cover letter");
+    }
 
     const coverLetter = await db.coverLetter.create({
       data: {
         content,
-        jobDescription: data.jobDescription,
-        companyName: data.companyName,
-        jobTitle: data.jobTitle,
+        jobDescription,
+        companyName,
+        jobTitle,
         status: "completed",
-        userId: user.id,
+        userId: user.id, // Ownership strictly bound to authenticated user
       },
     });
 
     return coverLetter;
   } catch (error) {
-    console.error("Error generating cover letter:", error.message);
-    throw new Error("Failed to generate cover letter");
+    console.error("[Cover Letter Generation Error]:", error.message);
+    throw new Error(error.message || "Failed to generate cover letter");
   }
 }
-
 
 export async function getCoverLetters() {
   const { userId } = await auth();
@@ -90,6 +122,7 @@ export async function getCoverLetters() {
 
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
+    select: { id: true },
   });
 
   if (!user) throw new Error("User not found");
@@ -97,6 +130,14 @@ export async function getCoverLetters() {
   return await db.coverLetter.findMany({
     where: {
       userId: user.id,
+    },
+    select: {
+      id: true,
+      jobTitle: true,
+      companyName: true,
+      jobDescription: true,
+      status: true,
+      createdAt: true,
     },
     orderBy: {
       createdAt: "desc",
@@ -110,14 +151,27 @@ export async function getCoverLetter(id) {
 
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
+    select: { id: true },
   });
 
   if (!user) throw new Error("User not found");
 
-  return await db.coverLetter.findUnique({
+  // Enforce strict ownership and select all fields required by CoverLetterPreview
+  return await db.coverLetter.findFirst({
     where: {
       id,
       userId: user.id,
+    },
+    select: {
+      id: true,
+      content: true,
+      jobTitle: true,
+      companyName: true,
+      jobDescription: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
+      userId: true,
     },
   });
 }
@@ -128,14 +182,27 @@ export async function deleteCoverLetter(id) {
 
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
+    select: { id: true },
   });
 
   if (!user) throw new Error("User not found");
 
-  return await db.coverLetter.delete({
+  // Enforce strict ownership check prior to deletion
+  const existing = await db.coverLetter.findFirst({
     where: {
       id,
       userId: user.id,
+    },
+    select: { id: true },
+  });
+
+  if (!existing) {
+    throw new Error("Cover letter not found or unauthorized");
+  }
+
+  return await db.coverLetter.delete({
+    where: {
+      id: existing.id,
     },
   });
 }

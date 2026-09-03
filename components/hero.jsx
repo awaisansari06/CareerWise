@@ -1,14 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import Image from "next/image";
 import { ArrowRight, Sparkles, CheckCircle2, ShieldCheck, Zap } from "lucide-react";
+import { useTheme } from "next-themes";
 
 const HeroSection = () => {
   const imageRef = useRef(null);
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Mount guard prevents hydration mismatch:
+  // On server / first paint we default to the dark banner since the app
+  // defaults to dark mode, then swap after client hydration if needed.
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const bannerSrc =
+    mounted && resolvedTheme === "light"
+      ? "/Banner-Light.png"
+      : "/Banner-Dark.png";
 
   useEffect(() => {
     const imageElement = imageRef.current;
@@ -36,17 +51,17 @@ const HeroSection = () => {
           {/* Top Innovation Badge */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-xs sm:text-sm font-semibold text-foreground backdrop-blur-md shadow-2xs">
             <Sparkles className="h-3.5 w-3.5 text-amber-500 animate-pulse" />
-            <span>Next-Gen AI Career Acceleration Platform</span>
+            <span>AI-Powered Career Intelligence Platform</span>
           </div>
 
           {/* Main Headline */}
           <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight gradient-title leading-[1.15] sm:leading-[1.12]">
-            Smarter Careers, Powered by AI Insight
+            Turn Your Experience Into Your Next Opportunity
           </h1>
 
           {/* Subtitle */}
           <p className="max-w-2xl text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
-            Advance your professional trajectory with intelligent career tooling — from ATS-calibrated resume diagnostics and role-tailored mock interviews to dynamic market insights and skill milestone roadmaps.
+            CareerWise analyzes where you are today, identifies what is holding you back, and helps you prepare for the roles you actually want — from resume improvement to interview readiness and career planning.
           </p>
 
           {/* CTA Buttons */}
@@ -78,15 +93,15 @@ const HeroSection = () => {
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-2 text-xs text-muted-foreground font-medium">
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-              <span>Instant ATS Resume Audit</span>
+              <span>Resume-driven recommendations</span>
             </span>
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-              <span>Role-Specific Mock Q&A</span>
+              <span>Role-specific interview practice</span>
             </span>
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-              <span>Real-Time Market Benchmarks</span>
+              <span>Real-time market intelligence</span>
             </span>
           </div>
         </div>
@@ -102,10 +117,10 @@ const HeroSection = () => {
           >
             <div className="relative overflow-hidden rounded-xl border border-border/60">
               <Image
-                src="/banner.png"
+                src={bannerSrc}
                 width={1280}
                 height={720}
-                alt="CareerWise AI Dashboard & Workspace Preview"
+                alt="CareerWise Workspace & Career Dashboard Preview"
                 className="w-full h-auto rounded-lg object-cover"
                 priority
               />

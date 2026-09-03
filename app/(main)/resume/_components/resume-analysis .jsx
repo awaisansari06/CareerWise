@@ -205,7 +205,7 @@ export default function ResumeAnalysis({ data }) {
               Resume Analysis
             </h1>
             <p className="text-sm md:text-base text-muted-foreground max-w-2xl leading-relaxed">
-              You submitted your resume and CareerWise AI has professionally analyzed it against
+              You submitted your resume and CareerWise has professionally analyzed it against
               modern industry hiring benchmarks and Applicant Tracking Systems.
             </p>
           </div>

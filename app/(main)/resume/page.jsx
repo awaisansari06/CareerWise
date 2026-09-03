@@ -2,6 +2,13 @@ import { getResumeAnalysis } from "@/actions/resume-analysis";
 import ResumeAnalysis from "./_components/resume-analysis ";
 import { getUserOnboardingStatus } from "@/actions/user";
 import { redirect } from "next/navigation";
+import { privatePageRobots } from "@/lib/site-config";
+
+export const metadata = {
+  title: "Resume Analysis & ATS Diagnostic",
+  description: "Detailed resume analysis, ATS compatibility scoring, and personalized improvement suggestions.",
+  robots: privatePageRobots,
+};
 
 export default async function ResumePage() {
   const { isOnboarded } = await getUserOnboardingStatus();

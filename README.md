@@ -1,9 +1,9 @@
 <div align="center">
 
-  <img src="public/banner.png" alt="CareerWise AI Banner" width="100%" style="border-radius: 12px; margin-bottom: 20px;" />
+  <img src="public/banner.png" alt="CareerWise Banner" width="100%" style="border-radius: 12px; margin-bottom: 20px;" />
 
-  # 🚀 CareerWise AI
-  ### *Your Intelligent AI-Powered Career Coach & Growth Platform*
+  # 🚀 CareerWise
+  ### *AI-Powered Career Intelligence Platform*
 
   <p align="center">
     Accelerate your professional growth with personalized AI career guidance, real-time market insights, intelligent ATS resume analysis, dynamic cover letter generation, interactive interview preparation, and visual career roadmaps.
@@ -269,7 +269,7 @@ CareerWise-AI/
 
 ## 🚀 Getting Started
 
-Follow these instructions to set up and run CareerWise AI locally on your machine.
+Follow these instructions to set up and run CareerWise locally on your machine.
 
 ### Prerequisites
 
@@ -349,7 +349,7 @@ npx prisma studio
 
 ### Background Job Setup (Inngest)
 
-CareerWise AI uses **Inngest** to execute automated industry insight updates and cron jobs.
+CareerWise uses **Inngest** to execute automated industry insight updates and cron jobs.
 
 In a separate terminal, launch the local Inngest Dev Server:
 ```bash

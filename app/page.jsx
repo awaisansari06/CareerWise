@@ -26,11 +26,63 @@ import {
 import { faqs } from "./data/faqs";
 import { features } from "./data/features";
 import { howItWorks } from "./data/howItWorks";
-import { testimonial } from "./data/testimonial";
+import { careerDecisions } from "./data/careerDecisions";
+
+import { siteConfig } from "@/lib/site-config";
 
 export default function LandingPage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": `${siteConfig.url}/#website`,
+        url: siteConfig.url,
+        name: siteConfig.name,
+        description: siteConfig.description,
+        publisher: {
+          "@id": `${siteConfig.url}/#organization`,
+        },
+      },
+      {
+        "@type": "Organization",
+        "@id": `${siteConfig.url}/#organization`,
+        name: siteConfig.name,
+        url: siteConfig.url,
+        logo: `${siteConfig.url}/banner.png`,
+        description: siteConfig.descriptor,
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": `${siteConfig.url}/#software`,
+        name: siteConfig.name,
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web",
+        offers: {
+          "@type": "Offer",
+          price: "0",
+          priceCurrency: "INR",
+        },
+        description: siteConfig.description,
+        featureList: [
+          "AI Resume Analysis & ATS Checking",
+          "AI Mock Interview Preparation",
+          "Personalized Career Roadmaps",
+          "AI Cover Letter Generator",
+          "Real-Time Industry Insights & Salary Benchmarks",
+        ],
+      },
+    ],
+  };
+
   return (
     <div className="relative w-full overflow-hidden">
+      {/* Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {/* Fixed Theme Background Mesh Grid */}
       <div className="grid-background" />
 
@@ -46,10 +98,10 @@ export default function LandingPage() {
               <span>Intelligent Career Suite</span>
             </Badge>
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
-              Core Capabilities Engineered for Your Growth
+              Everything You Need to Move Forward
             </h2>
             <p className="text-xs sm:text-sm md:text-base text-muted-foreground leading-relaxed">
-              Every tool in CareerWise AI is purpose-built to analyze your qualifications, bridge skill gaps, and prepare you for competitive hiring standards.
+              One career workspace that turns your experience, skills, and goals into practical next steps.
             </p>
           </div>
 
@@ -92,10 +144,10 @@ export default function LandingPage() {
                 60+
               </div>
               <p className="text-xs sm:text-sm font-bold text-foreground">
-                Career Specializations
+                Career Paths Mapped
               </p>
               <p className="text-[11px] text-muted-foreground">
-                Spanning tech, business & creative fields
+                Spanning diverse industries and roles
               </p>
             </div>
 
@@ -105,10 +157,10 @@ export default function LandingPage() {
                 10-Point
               </div>
               <p className="text-xs sm:text-sm font-bold text-foreground">
-                ATS Diagnostic Rubric
+                Resume Diagnostic
               </p>
               <p className="text-[11px] text-muted-foreground">
-                Keyword matching & section scoring
+                Deep section-by-section analysis
               </p>
             </div>
 
@@ -118,10 +170,10 @@ export default function LandingPage() {
                 100%
               </div>
               <p className="text-xs sm:text-sm font-bold text-foreground">
-                Resume-Aligned Scenarios
+                Resume-Aware Practice
               </p>
               <p className="text-[11px] text-muted-foreground">
-                Questions customized to your background
+                Questions anchored in your genuine background
               </p>
             </div>
 
@@ -131,10 +183,10 @@ export default function LandingPage() {
                 Instant
               </div>
               <p className="text-xs sm:text-sm font-bold text-foreground">
-                Real-Time AI Feedback
+                Actionable Feedback
               </p>
               <p className="text-[11px] text-muted-foreground">
-                Actionable tips for immediate improvement
+                Clear recommendations you can act on today
               </p>
             </div>
           </div>
@@ -150,10 +202,10 @@ export default function LandingPage() {
               <span>Guided Process</span>
             </Badge>
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
-              How CareerWise AI Works
+              From Resume to Readiness
             </h2>
             <p className="text-xs sm:text-sm md:text-base text-muted-foreground leading-relaxed">
-              Four connected steps engineered to take you from resume diagnostic to high-conviction job offers.
+              CareerWise connects your profile, goals, and practice into one continuous improvement loop.
             </p>
           </div>
 
@@ -194,50 +246,46 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 5. User Feedback & Testimonials */}
+      {/* 5. Decision Pillars & Value Framework */}
       <section className="w-full py-16 sm:py-24 border-t border-border/60 bg-muted/15">
         <div className="container mx-auto px-4 md:px-6">
           <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
             <Badge variant="neutral" className="gap-1.5 py-1 px-3">
-              <Users className="h-3.5 w-3.5 text-primary" />
-              <span>User Perspectives</span>
+              <Compass className="h-3.5 w-3.5 text-primary" />
+              <span>Decision Framework</span>
             </Badge>
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
-              Accelerating Career Success
+              Built Around Real Career Decisions
             </h2>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              See how professionals leverage CareerWise AI to prepare and land competitive roles.
+            <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Career growth rarely comes down to one perfect answer. CareerWise helps you evaluate your options, identify what matters, and act on the next step.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {testimonial.map((item, index) => (
+            {careerDecisions.map((item, index) => (
               <Card
                 key={index}
-                className="border-border/80 bg-card/80 backdrop-blur-sm flex flex-col justify-between p-6 hover:border-primary/40 transition-all shadow-xs"
+                className="border-border/80 bg-card/80 backdrop-blur-sm flex flex-col justify-between p-6 hover:border-primary/40 transition-all shadow-xs group"
               >
                 <div className="space-y-4">
-                  {/* Author Header */}
-                  <div className="flex items-center gap-3.5">
-                    <div
-                      className={`h-11 w-11 rounded-full bg-gradient-to-br ${item.gradient} flex items-center justify-center text-white font-bold text-sm shadow-xs shrink-0`}
-                    >
-                      {item.initials}
+                  <div className="flex items-center justify-between">
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
+                      {item.icon}
                     </div>
-                    <div className="space-y-0.5">
-                      <p className="font-bold text-sm text-foreground">{item.author}</p>
-                      <p className="text-xs text-muted-foreground">{item.role}</p>
-                      <p className="text-[11px] font-medium text-primary flex items-center gap-1">
-                        <Building2 className="h-3 w-3" />
-                        <span>{item.company}</span>
-                      </p>
-                    </div>
+                    <span className="font-mono text-xs font-bold text-muted-foreground/60 px-2 py-0.5 rounded bg-muted/30">
+                      {item.step}
+                    </span>
                   </div>
 
-                  {/* Quote text */}
-                  <blockquote className="text-xs sm:text-sm text-muted-foreground leading-relaxed italic pt-1">
-                    &ldquo;{item.quote}&rdquo;
-                  </blockquote>
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-lg text-foreground">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                      {item.description}
+                    </p>
+                  </div>
                 </div>
               </Card>
             ))}
@@ -254,10 +302,10 @@ export default function LandingPage() {
               <span>Clear Answers</span>
             </Badge>
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
-              Frequently Asked Questions
+              Questions Before You Get Started
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              Everything you need to know about CareerWise AI, our intelligence tooling, and privacy.
+              Everything you need to know about how CareerWise analyzes your profile, supports your preparation, and protects your information.
             </p>
           </div>
 
@@ -291,15 +339,15 @@ export default function LandingPage() {
             <div className="relative z-10 space-y-6 max-w-2xl mx-auto">
               <Badge variant="neutral" className="gap-1.5 py-1 px-3">
                 <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-                <span>Begin Your Journey Today</span>
+                <span>✦ Start Building Your Career Strategy</span>
               </Badge>
 
               <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-tight">
-                Take the Next Step Toward Your Professional Future
+                Your Next Move Starts With Knowing Where You Stand
               </h2>
 
               <p className="text-xs sm:text-sm md:text-base text-muted-foreground leading-relaxed">
-                Join ambitious professionals accelerating their careers with AI resume diagnostics, role-specific mock interviews, and skill roadmaps.
+                Analyze your experience, strengthen your weak spots, and build a clearer path toward the opportunities you want.
               </p>
 
               <div className="pt-2">
@@ -309,7 +357,7 @@ export default function LandingPage() {
                   className="px-8 py-6 text-base font-bold shadow-lg hover:shadow-xl gap-2 transition-all group"
                 >
                   <Link href="/dashboard">
-                    <span>Smarter Careers Start Here</span>
+                    <span>Explore CareerWise</span>
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Link>
                 </Button>

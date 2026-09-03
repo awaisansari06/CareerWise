@@ -2,78 +2,13 @@
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+import { generateAIInsights } from "@/lib/gemini";
+import { hasValidInrSalaryData } from "@/lib/salary-utils";
 
 /**
- * Generate AI industry insights based on resume content (skills, projects, experience)
+ * Returns or generates industry insights for the authenticated user.
+ * Protected by Clerk authentication.
  */
-export const generateAIInsights = async (resumeData) => {
-  const prompt = `
-    Based on the following resume data, identify the MOST relevant industry 
-    and provide insights in ONLY the following JSON format:
-
-    Resume Data: ${JSON.stringify(resumeData)}
-
-    {
-      "industry": "string",
-      "salaryRanges": [
-        { "role": "string", "min": number, "max": number, "median": number, "location": "string" }
-      ],
-      "growthRate": number,
-      "demandLevel": "High" | "Medium" | "Low",
-      "topSkills": ["skill1", "skill2"],
-      "marketOutlook": "Positive" | "Neutral" | "Negative",
-      "keyTrends": ["trend1", "trend2"],
-      "recommendedSkills": ["skill1", "skill2"],
-      "jobOpenings": number,
-      "jobOpeningsChange": number,
-      "topRegions": [{"name":"string","jobs":number}],
-      "careerPath": [{"title":"string","salary":number}],
-      "certifications": ["string"],
-      "forecast": [{"year":"string","growth":number}]
-    }
-
-    RULES:
-    - Return ONLY the JSON. No markdown, no notes.
-    - Include at least 5 common roles for salary ranges.
-    - Growth rate must be a percentage.
-    - Include at least 5 skills and 5 trends.
-  `;
-
-  try {
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    const cleanedText = text.replace(/```(?:json)?\n?/g, "").trim();
-
-    if (!cleanedText) {
-      throw new Error("AI returned empty response");
-    }
-
-    return JSON.parse(cleanedText);
-  } catch (err) {
-    console.error("Failed to parse AI response:", err);
-    return {
-      industry: "Information Technology",
-      salaryRanges: [],
-      growthRate: 0,
-      demandLevel: "Medium",
-      topSkills: [],
-      marketOutlook: "Neutral",
-      keyTrends: [],
-      recommendedSkills: [],
-      jobOpenings: 0,
-      jobOpeningsChange: 0,
-      topRegions: [],
-      careerPath: [],
-      certifications: [],
-      forecast: [],
-    };
-  }
-};
-
 export async function getIndustryInsights() {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
@@ -86,33 +21,62 @@ export async function getIndustryInsights() {
   if (!user) throw new Error("User not found");
   if (!user.resume) throw new Error("Resume not uploaded yet");
 
+  // Check if resume content has a classified industry
+  let resumeIndustry = null;
+  try {
+    const parsedResume = typeof user.resume.content === "string" ? JSON.parse(user.resume.content) : user.resume.content;
+    if (parsedResume?.industry && typeof parsedResume.industry === "string" && parsedResume.industry.trim()) {
+      resumeIndustry = parsedResume.industry.trim();
+    }
+  } catch (e) {}
+
+  const effectiveIndustry = resumeIndustry || user.industry;
+
   const now = new Date();
 
-  if (!user.industryInsight || new Date(user.industryInsight.nextUpdate) < now) {
-    const insights = await generateAIInsights(user.resume);
+  // Validate that linked industryInsight matches current effectiveIndustry, has not expired, and contains valid INR data
+  const hasValidMatchingInsight =
+    user.industryInsight &&
+    effectiveIndustry &&
+    user.industryInsight.industry.toLowerCase() === effectiveIndustry.toLowerCase() &&
+    new Date(user.industryInsight.nextUpdate) >= now &&
+    hasValidInrSalaryData(user.industryInsight);
 
-    const industryInsight = await db.industryInsight.upsert({
-      where: { industry: insights.industry },
-      update: {
-        ...insights,
-        nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        lastUpdated: new Date(),
-      },
-      create: {
-        industry: insights.industry,
-        ...insights,
-        nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        users: {
-          connect: { id: user.id },
-        },
-      },
+  if (!hasValidMatchingInsight) {
+    const targetIndustry = effectiveIndustry || "Information Technology";
+
+    // Check if an existing cached IndustryInsight already exists for targetIndustry with valid INR data
+    let industryInsight = await db.industryInsight.findUnique({
+      where: { industry: targetIndustry },
     });
 
-    if (!user.industryInsight) {
+    if (!industryInsight || new Date(industryInsight.nextUpdate) < now || !hasValidInrSalaryData(industryInsight)) {
+      const referenceData = effectiveIndustry || user.resume;
+      const insights = await generateAIInsights(referenceData);
+      const generatedIndustry = effectiveIndustry || insights.industry;
+
+      industryInsight = await db.industryInsight.upsert({
+        where: { industry: generatedIndustry },
+        update: {
+          ...insights,
+          industry: generatedIndustry,
+          nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          lastUpdated: new Date(),
+        },
+        create: {
+          industry: generatedIndustry,
+          ...insights,
+          nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          lastUpdated: new Date(),
+        },
+      });
+    }
+
+    if (user.industry !== industryInsight.industry) {
       await db.user.update({
         where: { id: user.id },
         data: {
-          industryInsight: { connect: { id: industryInsight.id } },
+          industry: industryInsight.industry,
         },
       });
     }

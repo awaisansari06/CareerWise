@@ -1,32 +1,37 @@
 export const faqs = [
   {
-    question: "What makes CareerWise AI unique as a career development tool?",
+    question: "How does CareerWise personalize recommendations?",
     answer:
-      "CareerWise AI combines AI-powered tools with real-time industry insights to accelerate your career growth. The platform offers four core features: intelligent resume analysis, a cover letter generator, adaptive interview preparation, and a career roadmap builder. Each tool is personalized to your skills and industry, ensuring guidance that’s both relevant and impactful.",
+      "When you upload your resume, CareerWise parses your actual work experience, verified skills, and career domain. This profile directly anchors your interview questions, skill gap analysis, and tailored roadmaps so every insight reflects your genuine background.",
   },
   {
-    question: "How does CareerWise AI create tailored content?",
+    question: "What does CareerWise analyze in my resume?",
     answer:
-      "During onboarding, CareerWise AI learns about your resume, experience, and skills. Using this information, it generates personalized cover letters, resume analysis, and role-specific interview questions. The content is aligned with your professional background and industry standards, making it highly relevant and effective.",
+      "CareerWise evaluates your resume across core professional dimensions including summary strength, contact completeness, skills extraction, work experience achievements, and quantifiable impact metrics against modern hiring standards.",
   },
   {
-    question: "How accurate and up-to-date are CareerWise AI's industry insights?",
+    question: "Can I use CareerWise if I'm not applying for technical jobs?",
     answer:
-      "Our industry insights are updated weekly using advanced AI analysis of current market trends. This includes salary benchmarks, in-demand skills, and growth forecasts. The system constantly evolves to provide the most reliable and timely data for your career decisions.",
+      "Yes. CareerWise dynamically classifies resumes across diverse professional domains — including office administration, finance, marketing, operations, and business leadership — generating role-specific mock interviews and domain benchmarks.",
   },
   {
-    question: "Is my data secure with CareerWise AI?",
+    question: "How are industry trends and salary information determined?",
     answer:
-      "Yes. Data security is a top priority. All professional information is encrypted and stored using industry-standard practices. We use Clerk for authentication and never share your personal data with third parties.",
+      "CareerWise synthesizes industry compensation ranges, hiring demand, and emerging competencies tailored to the Indian job market. Market insights are updated periodically through background intelligence workflows.",
   },
   {
-    question: "How can I track my interview preparation progress?",
+    question: "Can I replace my resume later?",
     answer:
-      "CareerWise AI monitors your performance across multiple practice interviews, offering detailed analytics and personalized suggestions. You can track improvements over time, identify weak spots, and get AI-powered tips to strengthen your responses.",
+      "Yes. You can upload an updated PDF resume directly from your Dashboard at any time. When you upload a replacement, your active resume profile, personal skills, and industry intelligence synchronize automatically.",
   },
   {
-    question: "Can I edit the AI-generated content?",
+    question: "Can I edit or customize AI-generated content?",
     answer:
-      "Absolutely. While CareerWise AI provides high-quality drafts, you have full control to edit and refine all generated cover letters and other documents. Our intuitive editor makes customization simple, so your materials perfectly match your voice and goals.",
+      "Yes. Cover letters and other generated documents can be reviewed and edited directly in the built-in document previewer before copying or exporting.",
+  },
+  {
+    question: "What happens to my resume and career data?",
+    answer:
+      "Your uploaded resume and profile information are tied strictly to your authenticated account through Clerk authentication. Private application views are protected with noindex directives, and your data is never indexed by public search engines.",
   },
 ];

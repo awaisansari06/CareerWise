@@ -8,7 +8,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from './ui/button'
-import { GraduationCap, LayoutDashboard, ChevronDown, PenBox, Route, ScanText, Sparkles } from 'lucide-react'
+import { GraduationCap, LayoutDashboard, ChevronDown, PenBox, Route, ScanText } from 'lucide-react'
+import { CareerWiseLogo } from '@/components/careerwise-logo'
 import { checkUser } from '@/lib/checkUser'
 import { ThemeToggle } from '@/components/theme-toggle'
 
@@ -20,16 +21,13 @@ export default async function Header() {
     <header className="fixed top-0 w-full border-b border-border/80 bg-background/85 backdrop-blur-md z-50 transition-colors duration-200">
       <nav className="container mx-auto px-3 sm:px-4 h-16 flex items-center justify-between">
         {/* Brand Logo */}
-        <Link href={!isSignedIn ? "/" : "/onboarding"} className="flex items-center gap-2 group shrink-0">
-          <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary transition-transform group-hover:scale-105 duration-200">
-            <Sparkles className="h-4 w-4" />
-          </div>
+        <Link href="/" className="flex items-center gap-2 group shrink-0">
+          <CareerWiseLogo
+            className="h-8 w-8 transition-transform group-hover:scale-105 duration-200"
+          />
           <div className="flex items-center">
             <span className="font-extrabold text-base sm:text-lg md:text-xl tracking-tight text-foreground">
               CAREERWISE
-            </span>
-            <span className="ml-1 sm:ml-1.5 text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-primary text-primary-foreground">
-              AI
             </span>
           </div>
         </Link>

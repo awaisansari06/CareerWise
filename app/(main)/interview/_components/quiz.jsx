@@ -36,7 +36,6 @@ import {
 export default function Quiz() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState([]);
-  const [showExplanation, setShowExplanation] = useState(false);
 
   const {
     loading: generatingQuiz,
@@ -51,11 +50,15 @@ export default function Quiz() {
     setData: setResultData,
   } = useFetch(saveQuizResult);
 
+  // Normalize questions array and extract quizId
+  const questions = quizData?.questions || (Array.isArray(quizData) ? quizData : []);
+  const quizId = quizData?.quizId;
+
   useEffect(() => {
     if (quizData) {
-      setAnswers(new Array(quizData.length).fill(null));
+      const qList = quizData?.questions || (Array.isArray(quizData) ? quizData : []);
+      setAnswers(new Array(qList.length).fill(null));
       setCurrentQuestion(0);
-      setShowExplanation(false);
     }
   }, [quizData]);
 
@@ -66,9 +69,8 @@ export default function Quiz() {
   };
 
   const handleNext = () => {
-    if (currentQuestion < quizData.length - 1) {
+    if (currentQuestion < questions.length - 1) {
       setCurrentQuestion((prev) => prev + 1);
-      setShowExplanation(false);
     } else {
       finishQuiz();
     }
@@ -77,24 +79,13 @@ export default function Quiz() {
   const handlePrevious = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion((prev) => prev - 1);
-      setShowExplanation(false);
     }
   };
 
-  const calculateScore = () => {
-    let correct = 0;
-    answers.forEach((answer, index) => {
-      if (answer === quizData[index].correctAnswer) {
-        correct++;
-      }
-    });
-    return (correct / quizData.length) * 100;
-  };
-
   const finishQuiz = async () => {
-    const score = calculateScore();
     try {
-      await saveQuizResultFn(quizData, answers, score);
+      // Score calculation is performed exclusively on the server
+      await saveQuizResultFn({ quizId, answers });
       toast.success("Mock interview completed and saved!");
     } catch (error) {
       toast.error(error.message || "Failed to save quiz results");
@@ -104,7 +95,6 @@ export default function Quiz() {
   const startNewQuiz = () => {
     setCurrentQuestion(0);
     setAnswers([]);
-    setShowExplanation(false);
     setResultData(null);
     generateQuizFn();
   };
@@ -129,7 +119,7 @@ export default function Quiz() {
               Synthesizing Interview Rubric
             </h3>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              CareerWise AI is evaluating your resume background to generate 10 tailored technical, conceptual, and situational interview questions.
+              CareerWise is evaluating your resume background to generate 10 tailored technical, conceptual, and situational interview questions.
             </p>
           </div>
 
@@ -152,7 +142,7 @@ export default function Quiz() {
   }
 
   // 3. Mock Interview Readiness / Briefing Card (Empty State before starting)
-  if (!quizData) {
+  if (!quizData || questions.length === 0) {
     return (
       <Card className="border-border/80 bg-card/70 backdrop-blur-sm overflow-hidden shadow-lg">
         <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border/60 p-6 sm:p-8">
@@ -241,7 +231,7 @@ export default function Quiz() {
           <div className="flex items-start gap-3 text-xs text-muted-foreground bg-primary/5 rounded-xl p-4 border border-primary/20">
             <Zap className="h-4 w-4 text-primary shrink-0 mt-0.5" />
             <p className="leading-relaxed">
-              You can toggle real-time AI explanations after selecting an answer, or proceed directly through the assessment and review all 10 questions at the conclusion.
+              Answer each question to the best of your ability. Comprehensive AI evaluation, correct answers, and actionable coaching tips are provided upon submitting your completed assessment.
             </p>
           </div>
         </CardContent>
@@ -266,12 +256,12 @@ export default function Quiz() {
   }
 
   // 4. In-Quiz Question Interface
-  const question = quizData[currentQuestion];
-  const isLastQuestion = currentQuestion === quizData.length - 1;
-  const progressPercent = Math.round(((currentQuestion + 1) / quizData.length) * 100);
+  const question = questions[currentQuestion];
+  const isLastQuestion = currentQuestion === questions.length - 1;
+  const progressPercent = Math.round(((currentQuestion + 1) / questions.length) * 100);
   const selectedAnswer = answers[currentQuestion];
   const optionLetters = ["A", "B", "C", "D"];
-  const remainingCount = quizData.length - (currentQuestion + 1);
+  const remainingCount = questions.length - (currentQuestion + 1);
 
   return (
     <Card className="border-border/80 bg-card/70 backdrop-blur-sm overflow-hidden shadow-xl">
@@ -280,7 +270,7 @@ export default function Quiz() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Badge variant="neutral" className="text-xs font-bold px-3 py-1">
-              Question {currentQuestion + 1} of {quizData.length}
+              Question {currentQuestion + 1} of {questions.length}
             </Badge>
             <span className="text-xs text-muted-foreground hidden sm:inline">
               • {remainingCount > 0 ? `${remainingCount} remaining` : "Final question"}
@@ -297,7 +287,7 @@ export default function Quiz() {
         {/* Question Text */}
         <div className="space-y-2">
           <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-foreground leading-snug">
-            {question.question}
+            {question?.question}
           </h2>
         </div>
 
@@ -307,7 +297,7 @@ export default function Quiz() {
           onValueChange={handleAnswer}
           className="space-y-3"
         >
-          {question.options.map((option, index) => {
+          {question?.options?.map((option, index) => {
             const isSelected = selectedAnswer === option;
             const letter = optionLetters[index] || `${index + 1}`;
 
@@ -346,19 +336,6 @@ export default function Quiz() {
             );
           })}
         </RadioGroup>
-
-        {/* Instant Explanation Box */}
-        {showExplanation && (
-          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-2 animate-in fade-in duration-200">
-            <div className="flex items-center gap-2 text-xs font-bold text-primary">
-              <Lightbulb className="h-4 w-4 text-amber-500" />
-              <span>AI Evaluation & Context</span>
-            </div>
-            <p className="text-xs sm:text-sm text-foreground/90 leading-relaxed">
-              {question.explanation}
-            </p>
-          </div>
-        )}
       </CardContent>
 
       {/* Footer Navigation */}
@@ -373,19 +350,6 @@ export default function Quiz() {
             >
               <ArrowLeft className="h-4 w-4" />
               <span className="hidden sm:inline">Previous</span>
-            </Button>
-          )}
-
-          {!showExplanation && (
-            <Button
-              onClick={() => setShowExplanation(true)}
-              variant="ghost"
-              size="sm"
-              disabled={!selectedAnswer}
-              className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-            >
-              <Lightbulb className="h-4 w-4 text-amber-500" />
-              <span>Show Explanation</span>
             </Button>
           )}
         </div>

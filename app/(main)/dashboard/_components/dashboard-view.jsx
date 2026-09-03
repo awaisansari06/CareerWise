@@ -1,6 +1,9 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { uploadResume } from "@/actions/resume";
 import {
   BarChart,
   Bar,
@@ -33,6 +36,9 @@ import {
   Layers,
   Compass,
   Target,
+  FileText,
+  Upload,
+  Loader2,
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { useTheme } from "next-themes";
@@ -43,8 +49,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { formatInrSalary, formatInrLakhs } from "@/lib/salary-utils";
 
 // Helper to format trend strings into { title, description }
 function parseTrend(trend) {
@@ -74,7 +82,11 @@ function parseTrend(trend) {
   return { title: trend, desc: "" };
 }
 
-export default function DashboardView({ insights }) {
+export default function DashboardView({ insights, initialResume }) {
+  const router = useRouter();
+  const fileInputRef = useRef(null);
+  const [currentResume, setCurrentResume] = useState(initialResume);
+  const [isUploading, setIsUploading] = useState(false);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -82,18 +94,79 @@ export default function DashboardView({ insights }) {
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (initialResume) {
+      setCurrentResume(initialResume);
+    }
+  }, [initialResume]);
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset input value to allow selecting same file if desired
+    e.target.value = "";
+
+    if (!file.name.toLowerCase().endsWith(".pdf") && file.type !== "application/pdf") {
+      toast.error("Please upload a valid PDF file.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size exceeds 5MB limit. Please upload a smaller PDF.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("resume", file);
+
+    setIsUploading(true);
+    const toastId = toast.loading("Analyzing and updating resume with Gemini AI...");
+
+    try {
+      const response = await uploadResume(formData);
+
+      if (response?.success && response?.resume) {
+        setCurrentResume({
+          id: response.resume.id,
+          filename: response.resume.filename || file.name,
+          skills: response.resume.skills || [],
+          updatedAt: response.resume.updatedAt || new Date().toISOString(),
+        });
+        toast.success("Resume updated successfully! Career profile refreshed.", { id: toastId });
+        router.refresh();
+      } else {
+        toast.error(response?.error || "Failed to update resume. Please try again.", { id: toastId });
+      }
+    } catch (err) {
+      toast.error(err.message || "Failed to update resume. Please try again.", { id: toastId });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const isDark = mounted ? resolvedTheme === "dark" : true;
 
-  // Memoized salary chart data
+  // Memoized salary chart data in Indian Rupees
   const salaryData = useMemo(() => {
     if (!insights?.salaryRanges || !Array.isArray(insights.salaryRanges)) return [];
-    return insights.salaryRanges.map((range) => ({
-      name: range.role,
-      min: Math.round(range.min / 1000),
-      max: Math.round(range.max / 1000),
-      median: Math.round(range.median / 1000),
-      spread: Math.round((range.max - range.min) / 1000),
-    }));
+    return insights.salaryRanges.map((range) => {
+      const minVal = Number(range.min) || 0;
+      const maxVal = Number(range.max) || 0;
+      const medianVal = Number(range.median) || 0;
+
+      return {
+        name: range.role,
+        rawMin: minVal,
+        rawMax: maxVal,
+        rawMedian: medianVal,
+        // Values in Lakhs for clean chart scaling (e.g. 7.5L, 12L)
+        min: Number((minVal / 100000).toFixed(2)),
+        max: Number((maxVal / 100000).toFixed(2)),
+        median: Number((medianVal / 100000).toFixed(2)),
+        spread: Number(((maxVal - minVal) / 100000).toFixed(2)),
+      };
+    });
   }, [insights?.salaryRanges]);
 
   // Memoized forecast line data
@@ -215,7 +288,7 @@ export default function DashboardView({ insights }) {
     forecastAreaEnd: isDark ? "rgba(56, 189, 248, 0.0)" : "rgba(2, 132, 199, 0.0)",
   };
 
-  // Custom Tooltip for Salary Bar Chart
+  // Custom Tooltip for Salary Bar Chart in Indian Rupees
   const CustomSalaryTooltip = ({ active, payload, label }) => {
     if (!active || !payload || !payload.length) return null;
     return (
@@ -224,20 +297,30 @@ export default function DashboardView({ insights }) {
           {label}
         </p>
         <div className="space-y-2 text-xs">
-          {payload.map((item) => (
-            <div key={item.name} className="flex items-center justify-between gap-4">
-              <span className="flex items-center gap-1.5 text-muted-foreground font-medium">
-                <span
-                  className="h-2 w-2 rounded-full"
-                  style={{ backgroundColor: item.color || item.fill }}
-                />
-                <span>{item.name}:</span>
-              </span>
-              <span className="font-bold text-foreground font-mono">
-                ${item.value?.toLocaleString()}K / yr
-              </span>
-            </div>
-          ))}
+          {payload.map((item) => {
+            const rawVal =
+              item.dataKey === "min"
+                ? item.payload?.rawMin
+                : item.dataKey === "median"
+                ? item.payload?.rawMedian
+                : item.payload?.rawMax;
+            const displayVal = typeof rawVal === "number" ? formatInrSalary(rawVal) : `₹${item.value}L`;
+
+            return (
+              <div key={item.name} className="flex items-center justify-between gap-4">
+                <span className="flex items-center gap-1.5 text-muted-foreground font-medium">
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ backgroundColor: item.color || item.fill }}
+                  />
+                  <span>{item.name}:</span>
+                </span>
+                <span className="font-bold text-foreground font-mono">
+                  {displayVal} / yr
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
     );
@@ -315,6 +398,95 @@ export default function DashboardView({ insights }) {
               Refreshed on {lastUpdatedDate}
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 1B. ACTIVE RESUME STATUS & UPDATE BAR                                     */}
+      {/* ========================================================================= */}
+      <div className="rounded-xl border border-border/80 bg-card/60 p-4 shadow-2xs backdrop-blur-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="p-2.5 rounded-lg bg-primary/10 text-primary border border-primary/20 shrink-0">
+            <FileText className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                Active Resume
+              </span>
+              <Badge
+                variant="outline"
+                className="text-[10px] px-1.5 py-0 h-4 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20 font-semibold"
+              >
+                Current
+              </Badge>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5 text-xs text-muted-foreground">
+              <span className="text-sm font-semibold text-foreground truncate max-w-[200px] sm:max-w-xs md:max-w-md">
+                {currentResume?.filename || "Uploaded Resume.pdf"}
+              </span>
+              <span>•</span>
+              <span>
+                Last updated{" "}
+                {format(
+                  new Date(currentResume?.updatedAt || Date.now()),
+                  "MMM d, yyyy"
+                )}
+              </span>
+            </div>
+
+            {/* Personal Skills from Current Resume */}
+            {Array.isArray(currentResume?.skills) && currentResume.skills.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 pt-2">
+                <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  Your Skills:
+                </span>
+                {currentResume.skills.slice(0, 8).map((skill) => (
+                  <span
+                    key={skill}
+                    className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20"
+                  >
+                    {skill}
+                  </span>
+                ))}
+                {currentResume.skills.length > 8 && (
+                  <span className="text-[11px] text-muted-foreground font-medium px-1">
+                    +{currentResume.skills.length - 8} more
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept="application/pdf"
+            className="hidden"
+            disabled={isUploading}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="gap-2 text-xs font-semibold cursor-pointer border-border/80 hover:border-primary/50"
+          >
+            {isUploading ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                <span>Updating Resume...</span>
+              </>
+            ) : (
+              <>
+                <Upload className="h-3.5 w-3.5 text-primary" />
+                <span>Update Resume</span>
+              </>
+            )}
+          </Button>
         </div>
       </div>
 
@@ -434,7 +606,7 @@ export default function DashboardView({ insights }) {
         <Card className="hover:border-primary/40 hover:shadow-card transition-all duration-200 sm:col-span-2 lg:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Top Skills
+              Top Industry Skills
             </span>
             <div className="p-2 rounded-lg bg-background/80 border border-border/60 text-primary">
               <Brain className="h-4 w-4" />
@@ -442,7 +614,7 @@ export default function DashboardView({ insights }) {
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-              {insights?.topSkills?.length || 0} Key Skills
+              {insights?.topSkills?.length || 0} In-Demand
             </div>
             <div className="flex flex-wrap gap-1.5 pt-0.5">
               {(insights?.topSkills || []).slice(0, 3).map((skill) => (
@@ -473,7 +645,7 @@ export default function DashboardView({ insights }) {
               <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
                 <span>Salary Ranges by Role</span>
                 <Badge variant="outline" className="text-xs font-mono font-normal">
-                  USD Thousands ($K)
+                  INR (₹ Lakhs)
                 </Badge>
               </CardTitle>
               <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-1">
@@ -538,7 +710,7 @@ export default function DashboardView({ insights }) {
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
-                    tickFormatter={(val) => `$${val}k`}
+                    tickFormatter={(val) => `₹${val}L`}
                     fontWeight={500}
                   />
                   <Tooltip
@@ -721,7 +893,11 @@ export default function DashboardView({ insights }) {
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0 self-start sm:self-auto">
                       <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-primary/10 text-primary border border-primary/20">
-                        ${role.salary}K Avg
+                        {typeof role.salary === "number"
+                          ? role.salary >= 100000
+                            ? `${formatInrSalary(role.salary)} Avg`
+                            : formatInrLakhs(role.salary * 1000) + " Avg"
+                          : `${role.salary} Avg`}
                       </span>
                     </div>
                   </div>
