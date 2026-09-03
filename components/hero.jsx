@@ -1,17 +1,22 @@
 "use client";
+
 import Link from "next/link";
 import React, { useEffect, useRef } from "react";
 import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 import Image from "next/image";
+import { ArrowRight, Sparkles, CheckCircle2, ShieldCheck, Zap } from "lucide-react";
 
 const HeroSection = () => {
   const imageRef = useRef(null);
+
   useEffect(() => {
     const imageElement = imageRef.current;
+    if (!imageElement) return;
 
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
-      const scrollThreshold = 100;
+      const scrollThreshold = 80;
 
       if (scrollPosition > scrollThreshold) {
         imageElement.classList.add("scrolled");
@@ -20,44 +25,91 @@ const HeroSection = () => {
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
-    <section className="w-full pt-36 md:pt-48 pb-10">
-      <div className="space-y-8 text-center">
-        <div className="space-y-6 mx-auto">
-          <h1 className="text-4xl font-bold md:text-5xl lg:text-6xl xl:text-7xl gradient-title animate-gradient">
-          Smarter Careers, Powered by AI Insight        </h1>
-          <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl leading-relaxed">
-            Advance your career with AI-powered guidance that goes beyond the basics — from personalized interview preparation to in-depth resume analysis and smart tools designed to help you stand out, stay confident, and succeed in today’s competitive job market
+    <section className="relative w-full pt-28 sm:pt-36 md:pt-44 pb-12 sm:pb-20 overflow-hidden">
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="flex flex-col items-center text-center space-y-6 max-w-4xl mx-auto">
+          {/* Top Innovation Badge */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-xs sm:text-sm font-semibold text-foreground backdrop-blur-md shadow-2xs">
+            <Sparkles className="h-3.5 w-3.5 text-amber-500 animate-pulse" />
+            <span>Next-Gen AI Career Acceleration Platform</span>
+          </div>
+
+          {/* Main Headline */}
+          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight gradient-title leading-[1.15] sm:leading-[1.12]">
+            Smarter Careers, Powered by AI Insight
+          </h1>
+
+          {/* Subtitle */}
+          <p className="max-w-2xl text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
+            Advance your professional trajectory with intelligent career tooling — from ATS-calibrated resume diagnostics and role-tailored mock interviews to dynamic market insights and skill milestone roadmaps.
           </p>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-2 w-full sm:w-auto">
+            <Button
+              asChild
+              size="lg"
+              className="w-full sm:w-auto px-8 py-6 text-base font-bold gap-2 shadow-lg hover:shadow-xl transition-all"
+            >
+              <Link href="/dashboard">
+                <span>Get Started Free</span>
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </Button>
+
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="w-full sm:w-auto px-8 py-6 text-base font-semibold border-border/80 hover:bg-muted/40"
+            >
+              <Link href="#features">
+                <span>Explore Features</span>
+              </Link>
+            </Button>
+          </div>
+
+          {/* Micro Value Proposition Bar */}
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-2 text-xs text-muted-foreground font-medium">
+            <span className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+              <span>Instant ATS Resume Audit</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+              <span>Role-Specific Mock Q&A</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+              <span>Real-Time Market Benchmarks</span>
+            </span>
+          </div>
         </div>
 
-        <div className="flex justify-center space-x-4">
-          <Link href="/dashboard">
-            <Button size="lg" className="px-8">
-              Get Started
-            </Button>
-          </Link>
-          <Link href="#features">
-            <Button size="lg" variant="outline" className="px-8">
-              Explore Features
-            </Button>
-          </Link>
-        </div>
+        {/* Hero Product Banner Preview with Subtle Ambient Glow */}
+        <div className="relative hero-image-wrapper mt-12 sm:mt-16 max-w-5xl mx-auto">
+          {/* Subtle Ambient Cyan/Blue Glow behind Image */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-48 bg-sky-500/15 dark:bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="hero-image-wrapper mt-10 md:mt-12">
-          <div ref={imageRef} className="hero-image">
-            <Image
-              src="/banner.png"
-              width={1280}
-              height={720}
-              alt="Dashboard Preview"
-              className="rounded-lg shadow-2xl border mx-auto"
-              priority
-            />
+          <div
+            ref={imageRef}
+            className="relative hero-image rounded-2xl border border-border/80 bg-card/50 p-2 sm:p-3 shadow-2xl backdrop-blur-md"
+          >
+            <div className="relative overflow-hidden rounded-xl border border-border/60">
+              <Image
+                src="/banner.png"
+                width={1280}
+                height={720}
+                alt="CareerWise AI Dashboard & Workspace Preview"
+                className="w-full h-auto rounded-lg object-cover"
+                priority
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -1,18 +1,38 @@
 import * as React from "react"
-
+import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
+
+const cardVariants = cva(
+  "text-card-foreground flex flex-col gap-6 rounded-xl border transition-all duration-200",
+  {
+    variants: {
+      variant: {
+        default:
+          "bg-card border-border py-6 shadow-xs",
+        elevated:
+          "bg-card border-border/70 py-6 shadow-card hover:shadow-elevated",
+        interactive:
+          "bg-card border-border/80 py-6 shadow-xs hover:border-primary/40 hover:shadow-card cursor-pointer active:scale-[0.99]",
+        highlighted:
+          "bg-card border-2 border-primary/40 py-6 shadow-glow relative overflow-hidden",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
 
 function Card({
   className,
+  variant = "default",
   ...props
 }) {
   return (
     <div
       data-slot="card"
-      className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
-        className
-      )}
+      data-variant={variant}
+      className={cn(cardVariants({ variant }), className)}
       {...props} />
   );
 }
@@ -39,7 +59,7 @@ function CardTitle({
   return (
     <div
       data-slot="card-title"
-      className={cn("leading-none font-semibold", className)}
+      className={cn("leading-none font-semibold tracking-tight text-foreground", className)}
       {...props} />
   );
 }
@@ -51,7 +71,7 @@ function CardDescription({
   return (
     <div
       data-slot="card-description"
-      className={cn("text-muted-foreground text-sm", className)}
+      className={cn("text-muted-foreground text-sm leading-normal", className)}
       {...props} />
   );
 }
@@ -92,6 +112,7 @@ function CardFooter({
 
 export {
   Card,
+  cardVariants,
   CardHeader,
   CardFooter,
   CardTitle,

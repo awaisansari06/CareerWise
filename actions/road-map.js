@@ -103,8 +103,10 @@ export async function saveRoadMap({ forceRegenerate = false } = {}) {
       : [],
   };
 
-  return db.roadmap.create({
-    data: {
+  return db.roadmap.upsert({
+    where: { userId: user.id },
+    update: safeRoadmap,
+    create: {
       userId: user.id,
       ...safeRoadmap,
     },

@@ -21,8 +21,17 @@ export async function generateCoverLetter(data) {
 
   const resume = JSON.parse(user.resume.content);
 
+  const currentDate = new Date().toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
   const prompt = `
 Write a professional cover letter for the ${data.jobTitle} position at ${data.companyName}.
+
+Date:
+${currentDate}
 
 Header:
 ${resume.name || ""}
@@ -44,11 +53,11 @@ Requirements:
 2. Highlight relevant skills and experience
 3. Show understanding of the company's needs
 4. Keep it concise (max 400 words)
-5. Use proper business letter formatting in markdown
+5. Use proper business letter formatting in markdown with the exact date "${currentDate}" placed below the candidate header
 6. Include specific examples of achievements or projects
 7. Relate candidate's background to job requirements
 
-Format the letter in markdown. Do not insert placeholder text like [Your Name] or [Your Address].
+Format the letter in markdown. The date of the letter must be "${currentDate}". Do not insert placeholder text like [Your Name] or [Your Address].
 `;
 
 
