@@ -1,9 +1,16 @@
 import Link from "next/link";
-import { ArrowLeft, PenBox, Sparkles } from "lucide-react";
+import { ArrowLeft, PenBox } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CoverLetterGenerator from "../_components/cover-letter-generator";
+import { getUserOnboardingStatus } from "@/actions/user";
+import { redirect } from "next/navigation";
 
-export default function NewCoverLetterPage() {
+export default async function NewCoverLetterPage() {
+  const { isOnboarded } = await getUserOnboardingStatus();
+  if (!isOnboarded) {
+    redirect("/onboarding");
+  }
+
   return (
     <div className="container mx-auto max-w-3xl space-y-6 py-6 px-4">
       {/* Navigation & Header */}
