@@ -13,9 +13,69 @@ const inter = Inter({
   display: "swap",
 });
 
+import { siteConfig } from "@/lib/site-config";
+
 export const metadata = {
-  title: "CareerWise AI — Intelligent Career Acceleration",
-  description: "AI-powered career guidance, resume analysis, cover letters, and interview preparation.",
+  metadataBase: new URL(siteConfig.url),
+  title: {
+    default: siteConfig.title,
+    template: `%s | ${siteConfig.name}`,
+  },
+  description: siteConfig.description,
+  applicationName: siteConfig.name,
+  keywords: siteConfig.keywords,
+  authors: [{ name: siteConfig.author }],
+  creator: siteConfig.creator,
+  publisher: siteConfig.publisher,
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: siteConfig.url,
+    title: siteConfig.title,
+    description: siteConfig.description,
+    siteName: siteConfig.name,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1280,
+        height: 720,
+        alt: `${siteConfig.name} — AI-Powered Career Intelligence Platform`,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.title,
+    description: siteConfig.description,
+    images: [siteConfig.ogImage],
+    creator: "@careerwise",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default async function RootLayout({ children }) {
@@ -48,10 +108,10 @@ export default async function RootLayout({ children }) {
               <div className="container mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs md:text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="font-medium text-foreground">CareerWise AI</span>
-                  <span>• Intelligent Career Platform</span>
+                  <span className="font-medium text-foreground">CareerWise</span>
+                  <span>• AI-Powered Career Intelligence Platform</span>
                 </div>
-                <p>© {new Date().getFullYear()} CareerWise AI. All rights reserved.</p>
+                <p>© {new Date().getFullYear()} CareerWise. All rights reserved.</p>
                 <div className="flex items-center gap-4">
                   <span className="hover:text-foreground transition-colors cursor-pointer">Privacy</span>
                   <span className="hover:text-foreground transition-colors cursor-pointer">Terms</span>

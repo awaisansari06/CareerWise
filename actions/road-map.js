@@ -2,21 +2,37 @@
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+import {
+  getGeminiModel,
+  safeGenerateContent,
+  safeParseAiResponse,
+  RoadmapResponseSchema,
+  formatUntrustedData,
+  PROMPT_SAFETY_DIRECTIVE,
+} from "@/lib/gemini";
 
 async function generateCareerRoadmap(resumeJson) {
-  const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+  const model = getGeminiModel();
+
+  let resumeData = resumeJson;
+  if (typeof resumeJson === "string") {
+    try {
+      resumeData = JSON.parse(resumeJson);
+    } catch {
+      resumeData = resumeJson;
+    }
+  }
 
   const prompt = `
 You are an expert career mentor and curriculum designer.
 
-Analyze the following resume and infer the most likely career field/industry 
+${PROMPT_SAFETY_DIRECTIVE}
+
+Analyze the following resume reference data and infer the most likely career field/industry 
 (e.g., Software Development, Medicine, Civil Engineering, Teaching, Law, Business, etc.).
 
-Resume:
-${JSON.stringify(resumeJson, null, 2)}
+UNTRUSTED RESUME REFERENCE DATA:
+${formatUntrustedData("resume_data", resumeData)}
 
 Now generate a career learning and growth roadmap SPECIFICALLY for this field.
 
@@ -31,25 +47,22 @@ Guidelines:
 
 Output ONLY valid JSON with the following structure:
 {
-  industry: "Inferred industry from resume",
-  roadmapTitle: "Custom roadmap title",
-  description: "Brief description of roadmap",
-  duration: "Suggested time frame",
-  initialNodes: [...],
-  initialEdges: [...]
+  "industry": "Inferred industry from resume",
+  "roadmapTitle": "Custom roadmap title",
+  "description": "Brief description of roadmap",
+  "duration": "Suggested time frame",
+  "initialNodes": [...],
+  "initialEdges": [...]
 }
 `;
 
-  const result = await model.generateContent(prompt);
-  const text = result.response.text();
-  const match = text.match(/\{[\s\S]*\}/);
-  if (!match) return null;
-
   try {
-    return JSON.parse(match[0]);
+    const result = await safeGenerateContent(model, prompt);
+    const text = result.response.text();
+    return safeParseAiResponse(text, RoadmapResponseSchema);
   } catch (err) {
-    console.error("❌ Failed to parse JSON:", err);
-    return null;
+    console.error("[Roadmap Generation Error]:", err.message);
+    throw new Error(err.message || "Failed to generate valid roadmap structure");
   }
 }
 
@@ -64,9 +77,8 @@ export async function saveRoadMap({ forceRegenerate = false } = {}) {
   if (!user || !user.resume) throw new Error("User or resume not found");
 
   if (!forceRegenerate) {
-    const existing = await db.roadmap.findFirst({
+    const existing = await db.roadmap.findUnique({
       where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
     });
     if (existing) return existing;
   }

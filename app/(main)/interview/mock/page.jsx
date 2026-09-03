@@ -2,6 +2,13 @@ import Link from "next/link";
 import { ArrowLeft, Sparkles, BrainCircuit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Quiz from "../_components/quiz";
+import { privatePageRobots } from "@/lib/site-config";
+
+export const metadata = {
+  title: "Mock Interview Session",
+  description: "Interactive AI mock interview session with automated scoring.",
+  robots: privatePageRobots,
+};
 
 export default function MockInterviewPage() {
   return (

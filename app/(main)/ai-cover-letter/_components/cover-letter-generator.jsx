@@ -85,7 +85,7 @@ export default function CoverLetterGenerator() {
           Target Position Information
         </CardTitle>
         <CardDescription className="text-xs sm:text-sm text-muted-foreground leading-relaxed mt-1">
-          Provide the employer and role requirements. CareerWise AI will cross-reference your verified resume background to synthesize a persuasive, tailored cover letter.
+          Provide the employer and role requirements. CareerWise will cross-reference your verified resume background to synthesize a persuasive, tailored cover letter.
         </CardDescription>
       </CardHeader>
 
@@ -190,7 +190,7 @@ export default function CoverLetterGenerator() {
           <div className="flex items-start gap-3 rounded-xl bg-muted/30 p-3.5 text-xs text-muted-foreground border border-border/60">
             <Zap className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
             <p className="leading-relaxed">
-              CareerWise AI extracts key accomplishments, quantifiable impact metrics, and tech stack proficiencies from your profile to write compelling paragraphs with zero generic filler.
+              CareerWise extracts key accomplishments, quantifiable impact metrics, and tech stack proficiencies from your profile to write compelling paragraphs with zero generic filler.
             </p>
           </div>
         </form>

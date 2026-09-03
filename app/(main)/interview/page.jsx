@@ -5,6 +5,13 @@ import QuizList from "./_components/quiz-list";
 import { getUserOnboardingStatus } from "@/actions/user";
 import { redirect } from "next/navigation";
 import { GraduationCap } from "lucide-react";
+import { privatePageRobots } from "@/lib/site-config";
+
+export const metadata = {
+  title: "AI Interview Preparation & Practice",
+  description: "Role-specific mock interviews with real-time AI scoring and response feedback.",
+  robots: privatePageRobots,
+};
 
 export default async function InterviewPrepPage() {
   const { isOnboarded } = await getUserOnboardingStatus();

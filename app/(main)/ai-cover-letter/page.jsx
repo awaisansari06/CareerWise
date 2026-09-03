@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/button";
 import CoverLetterList from "./_components/cover-letter-list";
 import { getUserOnboardingStatus } from "@/actions/user";
 import { redirect } from "next/navigation";
+import { privatePageRobots } from "@/lib/site-config";
+
+export const metadata = {
+  title: "AI Cover Letter Generator",
+  description: "Create tailored, job-specific cover letters matched directly against your resume qualifications.",
+  robots: privatePageRobots,
+};
 
 export default async function CoverLetterPage() {
   const { isOnboarded } = await getUserOnboardingStatus();
