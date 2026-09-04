@@ -32,9 +32,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { generateCoverLetter } from "@/actions/cover-letter";
 import useFetch from "@/hooks/use-fetch";
+import { motion, useReducedMotion } from "framer-motion";
+import { standardEase } from "@/lib/motion-variants";
 
 export default function CoverLetterPreview({ letter }) {
   const router = useRouter();
+  const shouldReduceMotion = useReducedMotion();
   const { theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [content, setContent] = useState(letter?.content || "");
@@ -117,8 +120,13 @@ export default function CoverLetterPreview({ letter }) {
     <div className="space-y-6">
       {/* Workspace Top Bar (Hidden on Print) */}
       <div className="print:hidden space-y-4">
-        {/* Breadcrumb Navigation */}
-        <div className="flex items-center justify-between">
+        {/* Action Bar / Navigation */}
+        <motion.div
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: shouldReduceMotion ? 0 : 0.4, ease: standardEase }}
+          className="flex items-center justify-between"
+        >
           <Button
             asChild
             variant="ghost"
@@ -140,10 +148,15 @@ export default function CoverLetterPreview({ letter }) {
               {stats.minutes} min read
             </Badge>
           </div>
-        </div>
+        </motion.div>
 
         {/* Title and Workspace Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-border/60 pb-5">
+        <motion.div
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: shouldReduceMotion ? 0 : 0.45, delay: shouldReduceMotion ? 0 : 0.08, ease: standardEase }}
+          className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-border/60 pb-5"
+        >
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="gap-1.5 text-xs font-semibold bg-muted/40">
@@ -266,18 +279,23 @@ export default function CoverLetterPreview({ letter }) {
               )}
             </Button>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Elevated Document Surface Canvas */}
-      <div className="w-full flex justify-center py-2 sm:py-4">
+      <motion.div
+        initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: shouldReduceMotion ? 0 : 0.5, delay: shouldReduceMotion ? 0 : 0.15, ease: standardEase }}
+        className="w-full flex justify-center py-2 sm:py-4"
+      >
         {mode === "preview" ? (
           /* High-Contrast Document Paper View */
           <div
             id="printable-cover-letter"
             className={`w-full max-w-3xl rounded-2xl p-8 sm:p-14 md:p-16 transition-all duration-200 ${
               isDark
-                ? "bg-[#0e172e] text-slate-100 border border-slate-700/60 shadow-2xl"
+                ? "bg-card text-foreground border border-border/80 shadow-2xl"
                 : "bg-white text-slate-900 border border-slate-200/90 shadow-xl"
             } print:shadow-none print:border-none print:p-0 print:m-0 print:max-w-none print:bg-white print:text-black`}
           >
@@ -290,7 +308,7 @@ export default function CoverLetterPreview({ letter }) {
                 source={content}
                 style={{
                   backgroundColor: "transparent",
-                  color: isDark ? "#f1f5f9" : "#0f172a",
+                  color: isDark ? "hsl(var(--foreground))" : "#0f172a",
                   fontFamily: "var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
                   fontSize: "15px",
                   lineHeight: "1.85",
@@ -313,7 +331,7 @@ export default function CoverLetterPreview({ letter }) {
             />
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Print-specific style helper */}
       <style jsx global>{`

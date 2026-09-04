@@ -14,7 +14,7 @@ const cardVariants = cva(
         interactive:
           "bg-card border-border/80 py-6 shadow-xs hover:border-primary/40 hover:shadow-card cursor-pointer active:scale-[0.99]",
         highlighted:
-          "bg-card border-2 border-primary/40 py-6 shadow-glow relative overflow-hidden",
+          "bg-card border border-primary/50 py-6 shadow-card relative overflow-hidden",
       },
     },
     defaultVariants: {

@@ -71,7 +71,7 @@ export default {
 				'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
 				'card': '0 4px 20px -2px rgba(0, 0, 0, 0.1)',
 				'elevated': '0 10px 30px -4px rgba(0, 0, 0, 0.15)',
-				'glow': '0 0 25px -5px hsl(var(--primary) / 0.15)',
+				'glow': '0 4px 20px -2px rgba(0, 0, 0, 0.25)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

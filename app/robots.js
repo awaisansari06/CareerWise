@@ -7,7 +7,7 @@ export default function robots() {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/sign-in", "/sign-up"],
+        allow: ["/", "/sign-in", "/sign-up", "/privacy", "/terms", "/security"],
         disallow: [
           "/dashboard",
           "/dashboard/*",

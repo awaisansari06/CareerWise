@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { generateQuiz, saveQuizResult } from "@/actions/interview";
 import QuizResult from "./quiz-result";
 import useFetch from "@/hooks/use-fetch";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   Sparkles,
   Loader2,
@@ -34,6 +35,7 @@ import {
 } from "lucide-react";
 
 export default function Quiz() {
+  const shouldReduceMotion = useReducedMotion();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState([]);
 
@@ -167,7 +169,7 @@ export default function Quiz() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             <div className="rounded-xl border border-border/70 bg-card p-3.5 sm:p-4 space-y-1 shadow-2xs">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-                <HelpCircle className="h-3.5 w-3.5 text-sky-500" />
+                <HelpCircle className="h-3.5 w-3.5 text-primary" />
                 <span>Questions</span>
               </div>
               <p className="text-lg sm:text-xl font-bold text-foreground font-mono">10 Items</p>
@@ -283,59 +285,67 @@ export default function Quiz() {
         <Progress value={progressPercent} className="h-2 w-full" />
       </div>
 
-      <CardContent className="p-5 sm:p-8 space-y-6">
-        {/* Question Text */}
-        <div className="space-y-2">
-          <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-foreground leading-snug">
-            {question?.question}
-          </h2>
-        </div>
-
-        {/* Answers List */}
-        <RadioGroup
-          value={selectedAnswer || ""}
-          onValueChange={handleAnswer}
-          className="space-y-3"
+      <CardContent className="p-5 sm:p-8">
+        <motion.div
+          key={currentQuestion}
+          initial={shouldReduceMotion ? {} : { opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
+          className="space-y-6"
         >
-          {question?.options?.map((option, index) => {
-            const isSelected = selectedAnswer === option;
-            const letter = optionLetters[index] || `${index + 1}`;
+          {/* Question Text */}
+          <div className="space-y-2">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-foreground leading-snug">
+              {question?.question}
+            </h2>
+          </div>
 
-            return (
-              <Label
-                key={index}
-                htmlFor={`option-${index}`}
-                className={`flex items-center gap-3.5 p-4 rounded-xl border transition-all duration-150 cursor-pointer select-none min-h-[56px] ${
-                  isSelected
-                    ? "border-primary bg-primary/10 dark:bg-primary/15 ring-2 ring-primary/40 shadow-sm text-foreground font-medium"
-                    : "border-border/70 bg-card/60 hover:border-primary/40 hover:bg-muted/30 text-foreground"
-                }`}
-              >
-                <div
-                  className={`h-7 w-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
+          {/* Answers List */}
+          <RadioGroup
+            value={selectedAnswer || ""}
+            onValueChange={handleAnswer}
+            className="space-y-3"
+          >
+            {question?.options?.map((option, index) => {
+              const isSelected = selectedAnswer === option;
+              const letter = optionLetters[index] || `${index + 1}`;
+
+              return (
+                <Label
+                  key={index}
+                  htmlFor={`option-${index}`}
+                  className={`flex items-center gap-3.5 p-4 rounded-xl border transition-all duration-150 cursor-pointer select-none min-h-[56px] ${
                     isSelected
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground border border-border/60"
+                      ? "border-primary bg-primary/10 dark:bg-primary/15 ring-2 ring-primary/40 shadow-sm text-foreground font-medium"
+                      : "border-border/70 bg-card/60 hover:border-primary/40 hover:bg-muted/30 text-foreground"
                   }`}
                 >
-                  {letter}
-                </div>
+                  <div
+                    className={`h-7 w-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
+                      isSelected
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground border border-border/60"
+                    }`}
+                  >
+                    {letter}
+                  </div>
 
-                <span className="flex-1 text-sm sm:text-base leading-relaxed">
-                  {option}
-                </span>
+                  <span className="flex-1 text-sm sm:text-base leading-relaxed">
+                    {option}
+                  </span>
 
-                <div className="shrink-0">
-                  <RadioGroupItem
-                    value={option}
-                    id={`option-${index}`}
-                    className="h-4 w-4 border-border/80 text-primary focus-visible:ring-primary"
-                  />
-                </div>
-              </Label>
-            );
-          })}
-        </RadioGroup>
+                  <div className="shrink-0">
+                    <RadioGroupItem
+                      value={option}
+                      id={`option-${index}`}
+                      className="h-4 w-4 border-border/80 text-primary focus-visible:ring-primary"
+                    />
+                  </div>
+                </Label>
+              );
+            })}
+          </RadioGroup>
+        </motion.div>
       </CardContent>
 
       {/* Footer Navigation */}

@@ -12,6 +12,8 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import dagre from "dagre";
+import { motion, useReducedMotion } from "framer-motion";
+import { standardEase } from "@/lib/motion-variants";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -62,40 +64,40 @@ const stageConfig = {
   Fundamentals: {
     label: "Fundamentals",
     badgeVariant: "info",
-    dotColor: "#38bdf8",
-    nodeBorder: "border-sky-500/40 hover:border-sky-500/80",
-    nodeBorderSelected: "border-sky-500 ring-2 ring-sky-500/50 shadow-sky-500/20",
-    nodeBg: "bg-sky-500/10 dark:bg-sky-500/15",
-    nodeText: "text-sky-700 dark:text-sky-300",
+    dotColor: "#2563eb",
+    nodeBorder: "border-blue-500/30 hover:border-blue-500/60",
+    nodeBorderSelected: "border-primary ring-2 ring-primary/40 shadow-md",
+    nodeBg: "bg-blue-500/5 dark:bg-blue-500/10",
+    nodeText: "text-blue-600 dark:text-blue-400",
     description: "Core conceptual foundations, syntax, and essential environment setup.",
   },
   Core: {
     label: "Core",
     badgeVariant: "success",
-    dotColor: "#34d399",
-    nodeBorder: "border-emerald-500/40 hover:border-emerald-500/80",
-    nodeBorderSelected: "border-emerald-500 ring-2 ring-emerald-500/50 shadow-emerald-500/20",
-    nodeBg: "bg-emerald-500/10 dark:bg-emerald-500/15",
+    dotColor: "#10b981",
+    nodeBorder: "border-emerald-500/30 hover:border-emerald-500/60",
+    nodeBorderSelected: "border-emerald-500 ring-2 ring-emerald-500/40 shadow-md",
+    nodeBg: "bg-emerald-500/5 dark:bg-emerald-500/10",
     nodeText: "text-emerald-700 dark:text-emerald-300",
     description: "Industry-standard methodologies, primary frameworks, and production patterns.",
   },
   Advanced: {
     label: "Advanced",
     badgeVariant: "warning",
-    dotColor: "#fbbf24",
-    nodeBorder: "border-amber-500/40 hover:border-amber-500/80",
-    nodeBorderSelected: "border-amber-500 ring-2 ring-amber-500/50 shadow-amber-500/20",
-    nodeBg: "bg-amber-500/10 dark:bg-amber-500/15",
+    dotColor: "#f59e0b",
+    nodeBorder: "border-amber-500/30 hover:border-amber-500/60",
+    nodeBorderSelected: "border-amber-500 ring-2 ring-amber-500/40 shadow-md",
+    nodeBg: "bg-amber-500/5 dark:bg-amber-500/10",
     nodeText: "text-amber-700 dark:text-amber-300",
     description: "Complex architecture, performance optimization, and distributed systems.",
   },
   Specialization: {
     label: "Specialization",
     badgeVariant: "neutral",
-    dotColor: "#c084fc",
-    nodeBorder: "border-purple-500/40 hover:border-purple-500/80",
-    nodeBorderSelected: "border-purple-500 ring-2 ring-purple-500/50 shadow-purple-500/20",
-    nodeBg: "bg-purple-500/10 dark:bg-purple-500/15",
+    dotColor: "#a855f7",
+    nodeBorder: "border-purple-500/30 hover:border-purple-500/60",
+    nodeBorderSelected: "border-purple-500 ring-2 ring-purple-500/40 shadow-md",
+    nodeBg: "bg-purple-500/5 dark:bg-purple-500/10",
     nodeText: "text-purple-700 dark:text-purple-300",
     description: "Niche domain leadership, specialized tooling, and advanced technical innovation.",
   },
@@ -266,6 +268,7 @@ function RoadmapCanvas({
 
 export default function CareerRoadmap({ roadmap }) {
   const router = useRouter();
+  const shouldReduceMotion = useReducedMotion();
   const { theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
@@ -309,10 +312,10 @@ export default function CareerRoadmap({ roadmap }) {
 
         const strokeColor = isConnected
           ? isDark
-            ? "#38bdf8"
-            : "#0284c7"
+            ? "#3b82f6"
+            : "#2563eb"
           : isDark
-          ? "#475569"
+          ? "#334155"
           : "#94a3b8";
 
         return {
@@ -414,7 +417,6 @@ export default function CareerRoadmap({ roadmap }) {
       setIsRegenerating(false);
     }
   };
-
   const selectedStage = selectedNode
     ? stageConfig[selectedNode.data?.level] || stageConfig.Fundamentals
     : null;
@@ -422,7 +424,12 @@ export default function CareerRoadmap({ roadmap }) {
   return (
     <div className="space-y-6">
       {/* Top Header & Overview Bar */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-border/60 pb-5">
+      <motion.div
+        initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: shouldReduceMotion ? 0 : 0.45, ease: standardEase }}
+        className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-border/60 pb-5"
+      >
         <div className="space-y-1.5">
           <div className="flex items-center gap-2 mb-1">
             <span className="p-1.5 rounded-md bg-primary/10 text-primary">
@@ -475,10 +482,15 @@ export default function CareerRoadmap({ roadmap }) {
             )}
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Stage Progression Bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <motion.div
+        initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: shouldReduceMotion ? 0 : 0.45, delay: shouldReduceMotion ? 0 : 0.08, ease: standardEase }}
+        className="grid grid-cols-2 sm:grid-cols-4 gap-3"
+      >
         {Object.entries(stageConfig).map(([key, stage]) => {
           const count = stageCounts[key] || 0;
           return (
@@ -504,10 +516,15 @@ export default function CareerRoadmap({ roadmap }) {
             </div>
           );
         })}
-      </div>
+      </motion.div>
 
       {/* Main Roadmap Workspace */}
-      <div className="grid lg:grid-cols-12 gap-6 items-start">
+      <motion.div
+        initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: shouldReduceMotion ? 0 : 0.5, delay: shouldReduceMotion ? 0 : 0.15, ease: standardEase }}
+        className="grid lg:grid-cols-12 gap-6 items-start"
+      >
         {/* ReactFlow Interactive Canvas Container (8 cols on lg, 7 cols on xl) */}
         <Card className="lg:col-span-8 xl:col-span-8 border-border/80 bg-card/50 backdrop-blur-sm overflow-hidden shadow-md">
           <CardHeader className="py-3 px-4 border-b border-border/60 flex flex-row items-center justify-between bg-card/80">
@@ -580,80 +597,103 @@ export default function CareerRoadmap({ roadmap }) {
                   {selectedStage?.description}
                 </div>
 
-                {/* Description & Learning Objective */}
-                <div className="space-y-1.5 rounded-xl border border-border/60 bg-card p-4 text-xs sm:text-sm leading-relaxed text-foreground/90 shadow-xs">
+                {/* Learning Objective */}
+                <div className="space-y-1.5">
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                     <BookOpen className="h-3.5 w-3.5 text-primary" />
                     <span>Learning Objective</span>
                   </h4>
-                  <p className="pt-1">
+                  <p className="text-xs text-foreground/90 leading-relaxed bg-muted/20 p-3 rounded-lg border border-border/50">
                     {selectedNode.data?.description ||
-                      "Mastery criteria and implementation guidelines for this technical milestone."}
+                      "Detailed guidance and mastery requirements for this milestone in your career journey."}
                   </p>
                 </div>
 
-                {/* Prerequisites (Real Incoming Edges) */}
-                {prerequisites.length > 0 && (
-                  <div className="space-y-2 pt-1">
+                {/* Prerequisites (Incoming dependencies) */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                      <ArrowLeft className="h-3.5 w-3.5 text-sky-500" />
-                      <span>Prerequisites ({prerequisites.length})</span>
+                      <ArrowLeft className="h-3.5 w-3.5 text-primary" />
+                      <span>Prerequisites</span>
                     </h4>
+                    <span className="text-[10px] text-muted-foreground">
+                      {prerequisites.length} required
+                    </span>
+                  </div>
+                  {prerequisites.length > 0 ? (
                     <div className="flex flex-wrap gap-1.5">
                       {prerequisites.map((pNode) => (
                         <button
                           key={pNode.id}
                           onClick={() => handleSelectById(pNode.id)}
-                          className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md border border-border/80 bg-muted/40 hover:bg-accent hover:border-primary/50 text-foreground transition-all text-left"
-                          title="Click to jump to this prerequisite"
+                          className="text-xs px-2.5 py-1 rounded-md border border-border/80 bg-muted/40 text-foreground hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-all text-left flex items-center gap-1 group"
+                          title="Click to inspect this prerequisite milestone"
                         >
-                          <span className="truncate max-w-[160px] font-medium">
+                          <span className="group-hover:translate-x-0.5 transition-transform">
                             {pNode.data.label}
                           </span>
-                          <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
                         </button>
                       ))}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic bg-muted/10 p-2.5 rounded-md border border-border/40">
+                      None • This is an entry milestone.
+                    </p>
+                  )}
+                </div>
 
-                {/* Next Milestones (Real Outgoing Edges) */}
-                {nextMilestones.length > 0 && (
-                  <div className="space-y-2 pt-1">
+                {/* Next Steps (Outgoing dependencies) */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                       <ArrowRight className="h-3.5 w-3.5 text-emerald-500" />
-                      <span>Leads Into ({nextMilestones.length})</span>
+                      <span>Unlocks Next</span>
                     </h4>
+                    <span className="text-[10px] text-muted-foreground">
+                      {nextMilestones.length} unlocked
+                    </span>
+                  </div>
+                  {nextMilestones.length > 0 ? (
                     <div className="flex flex-wrap gap-1.5">
                       {nextMilestones.map((nNode) => (
                         <button
                           key={nNode.id}
                           onClick={() => handleSelectById(nNode.id)}
-                          className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md border border-border/80 bg-muted/40 hover:bg-accent hover:border-primary/50 text-foreground transition-all text-left"
-                          title="Click to jump to this next milestone"
+                          className="text-xs px-2.5 py-1 rounded-md border border-border/80 bg-muted/40 text-foreground hover:bg-emerald-500/10 hover:border-emerald-500/40 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all text-left flex items-center gap-1 group"
+                          title="Click to inspect this next milestone"
                         >
-                          <span className="truncate max-w-[160px] font-medium">
+                          <span className="group-hover:translate-x-0.5 transition-transform">
                             {nNode.data.label}
                           </span>
-                          <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
                         </button>
                       ))}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic bg-muted/10 p-2.5 rounded-md border border-border/40">
+                      Terminal milestone • Demonstrates specialization completion.
+                    </p>
+                  )}
+                </div>
 
-                {/* External Link if provided */}
+                {/* External Learning Resource */}
                 {selectedNode.data?.link && (
-                  <Button asChild variant="outline" size="sm" className="w-full gap-2 text-xs font-medium mt-2">
-                    <a
-                      href={selectedNode.data.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  <div className="pt-2">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="w-full gap-2 text-xs font-medium border-border/80 hover:bg-primary/5 hover:border-primary/40"
                     >
-                      <span>Explore Curated Learning Resource</span>
-                      <ExternalLink className="h-3.5 w-3.5 text-primary" />
-                    </a>
-                  </Button>
+                      <a
+                        href={selectedNode.data.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <span>Explore Learning Resource</span>
+                        <ExternalLink className="h-3.5 w-3.5 text-primary" />
+                      </a>
+                    </Button>
+                  </div>
                 )}
               </div>
             ) : (
@@ -685,7 +725,7 @@ export default function CareerRoadmap({ roadmap }) {
             )}
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
 
       {/* Mobile & Tablet Modal Dialog for Node Details */}
       <Dialog open={isMobileDialogOpen} onOpenChange={setIsMobileDialogOpen}>
@@ -729,7 +769,7 @@ export default function CareerRoadmap({ roadmap }) {
             {prerequisites.length > 0 && (
               <div className="space-y-1.5">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                  <ArrowLeft className="h-3 w-3 text-sky-500" />
+                  <ArrowLeft className="h-3 w-3 text-primary" />
                   <span>Prerequisites</span>
                 </h4>
                 <div className="flex flex-wrap gap-1.5">
