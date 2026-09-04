@@ -84,6 +84,13 @@ Return only valid JSON.`,
       throw new Error("The uploaded file does not look like a professional resume");
     }
 
+    // Normalize skills to strings if Gemini returns an array of skill objects
+    if (Array.isArray(extractedData.skills)) {
+      extractedData.skills = extractedData.skills.map((s) =>
+        typeof s === "string" ? s : s?.name || s?.skill || s?.title || JSON.stringify(s)
+      );
+    }
+
     // 5. Ensure industry is classified; infer from structured profile if not present
     let targetIndustry = extractedData.industry?.trim();
     if (!targetIndustry) {
@@ -242,7 +249,9 @@ export async function getResume() {
   try {
     const parsed = typeof resume.content === "string" ? JSON.parse(resume.content) : resume.content;
     if (Array.isArray(parsed?.skills)) {
-      skills = parsed.skills;
+      skills = parsed.skills.map((s) =>
+        typeof s === "string" ? s : s?.name || s?.skill || s?.title || String(s)
+      );
     }
   } catch (e) {
     skills = [];

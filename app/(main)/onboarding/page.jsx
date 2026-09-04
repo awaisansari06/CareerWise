@@ -3,6 +3,8 @@ import { getUserOnboardingStatus } from "@/actions/user";
 import ResumeUpload from "./_components/onboarding-form";
 import { privatePageRobots } from "@/lib/site-config";
 
+export const maxDuration = 60;
+
 export const metadata = {
   title: "Professional Onboarding",
   description: "Set up your CareerWise profile and analyze your resume.",
