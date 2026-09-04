@@ -5,8 +5,11 @@ import { Brain, Target, Trophy, Zap, ArrowUpRight, ArrowDownRight, Award } from 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { motion, useReducedMotion } from "framer-motion";
+import { staggerContainerVariants, staggerItemVariants } from "@/lib/motion-variants";
 
 export default function StatsCards({ assessments }) {
+  const shouldReduceMotion = useReducedMotion();
   const hasAssessments = assessments && assessments.length > 0;
 
   const getAverageScore = () => {
@@ -49,15 +52,21 @@ export default function StatsCards({ assessments }) {
   const deltaVsAvg = hasAssessments ? Number((latestScore - averageScore).toFixed(1)) : 0;
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <motion.div
+      initial={shouldReduceMotion ? {} : "hidden"}
+      animate="visible"
+      variants={staggerContainerVariants}
+      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
       {/* 1. Average Score */}
-      <Card className="relative overflow-hidden border-border/80 bg-card/70 backdrop-blur-sm hover:border-primary/40 hover:shadow-card transition-all duration-200">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-500 to-primary" />
+      <motion.div variants={staggerItemVariants}>
+        <Card className="relative overflow-hidden border-border/80 bg-card/70 backdrop-blur-sm hover:border-primary/40 hover:shadow-card transition-all duration-200 h-full">
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-primary/40" />
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             Average Score
           </CardTitle>
-          <div className="p-2 rounded-lg bg-sky-500/10 text-sky-500 dark:bg-sky-500/20 dark:text-sky-400">
+          <div className="p-2 rounded-lg bg-primary/10 text-primary">
             <Trophy className="h-4 w-4" />
           </div>
         </CardHeader>
@@ -91,16 +100,18 @@ export default function StatsCards({ assessments }) {
             </p>
           )}
         </CardContent>
-      </Card>
+        </Card>
+      </motion.div>
 
       {/* 2. Questions Practiced */}
-      <Card className="relative overflow-hidden border-border/80 bg-card/70 backdrop-blur-sm hover:border-primary/40 hover:shadow-card transition-all duration-200">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500" />
+      <motion.div variants={staggerItemVariants}>
+        <Card className="relative overflow-hidden border-border/80 bg-card/70 backdrop-blur-sm hover:border-primary/40 hover:shadow-card transition-all duration-200 h-full">
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-border/80" />
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             Questions Practiced
           </CardTitle>
-          <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-500 dark:bg-indigo-500/20 dark:text-indigo-400">
+          <div className="p-2 rounded-lg bg-muted text-muted-foreground">
             <Brain className="h-4 w-4" />
           </div>
         </CardHeader>
@@ -128,16 +139,18 @@ export default function StatsCards({ assessments }) {
             </div>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </motion.div>
 
       {/* 3. Latest Score */}
-      <Card className="relative overflow-hidden border-border/80 bg-card/70 backdrop-blur-sm hover:border-primary/40 hover:shadow-card transition-all duration-200 sm:col-span-2 lg:col-span-1">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
+      <motion.div variants={staggerItemVariants} className="sm:col-span-2 lg:col-span-1">
+        <Card className="relative overflow-hidden border-border/80 bg-card/70 backdrop-blur-sm hover:border-primary/40 hover:shadow-card transition-all duration-200 h-full">
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-emerald-500/50" />
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             Latest Score
           </CardTitle>
-          <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 dark:bg-emerald-500/20 dark:text-emerald-400">
+          <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 dark:text-emerald-400">
             <Target className="h-4 w-4" />
           </div>
         </CardHeader>
@@ -184,7 +197,8 @@ export default function StatsCards({ assessments }) {
             </p>
           )}
         </CardContent>
-      </Card>
-    </div>
+        </Card>
+      </motion.div>
+    </motion.div>
   );
 }

@@ -53,6 +53,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { formatInrSalary, formatInrLakhs } from "@/lib/salary-utils";
+import { motion, useReducedMotion } from "framer-motion";
+import { standardEase, staggerContainerVariants, staggerItemVariants } from "@/lib/motion-variants";
 
 // Helper to format trend strings into { title, description }
 function parseTrend(trend) {
@@ -89,6 +91,7 @@ export default function DashboardView({ insights, initialResume }) {
   const [isUploading, setIsUploading] = useState(false);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
     setMounted(true);
@@ -280,12 +283,12 @@ export default function DashboardView({ insights, initialResume }) {
   const chartColors = {
     grid: isDark ? "rgba(255, 255, 255, 0.07)" : "rgba(15, 23, 42, 0.08)",
     axis: isDark ? "#94a3b8" : "#64748b",
-    salaryMin: isDark ? "#38bdf8" : "#0284c7",       // Sky
-    salaryMedian: isDark ? "#818cf8" : "#4f46e5",    // Indigo
-    salaryMax: isDark ? "#34d399" : "#059669",       // Emerald
-    forecastLine: isDark ? "#38bdf8" : "#0284c7",
-    forecastAreaStart: isDark ? "rgba(56, 189, 248, 0.28)" : "rgba(2, 132, 199, 0.22)",
-    forecastAreaEnd: isDark ? "rgba(56, 189, 248, 0.0)" : "rgba(2, 132, 199, 0.0)",
+    salaryMin: isDark ? "#3b82f6" : "#2563eb",       // Brand Blue
+    salaryMedian: isDark ? "#6366f1" : "#4f46e5",    // Indigo
+    salaryMax: isDark ? "#10b981" : "#059669",       // Emerald
+    forecastLine: isDark ? "#3b82f6" : "#2563eb",
+    forecastAreaStart: isDark ? "rgba(59, 130, 246, 0.15)" : "rgba(37, 99, 235, 0.12)",
+    forecastAreaEnd: isDark ? "rgba(59, 130, 246, 0.0)" : "rgba(37, 99, 235, 0.0)",
   };
 
   // Custom Tooltip for Salary Bar Chart in Indian Rupees
@@ -338,7 +341,7 @@ export default function DashboardView({ insights, initialResume }) {
         <p className="font-bold text-base text-foreground mb-2">{label}</p>
         <div className="flex items-center justify-between gap-4 text-xs">
           <span className="flex items-center gap-1.5 text-muted-foreground">
-            <span className="h-2 w-2 rounded-full bg-sky-500" />
+            <span className="h-2 w-2 rounded-full bg-primary" />
             <span>Growth Rate:</span>
           </span>
           <span className="font-bold text-foreground font-mono">
@@ -354,7 +357,12 @@ export default function DashboardView({ insights, initialResume }) {
       {/* ========================================================================= */}
       {/* 1. COMMAND CENTER HEADER & INTELLIGENCE TELEMETRY                         */}
       {/* ========================================================================= */}
-      <div className="relative rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card/90 to-card/50 p-6 md:p-8 shadow-xs backdrop-blur-xs overflow-hidden">
+      <motion.div
+        initial={shouldReduceMotion ? {} : { opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: standardEase }}
+        className="relative rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card/90 to-card/50 p-6 md:p-8 shadow-xs backdrop-blur-xs overflow-hidden"
+      >
         <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -399,12 +407,17 @@ export default function DashboardView({ insights, initialResume }) {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* ========================================================================= */}
       {/* 1B. ACTIVE RESUME STATUS & UPDATE BAR                                     */}
       {/* ========================================================================= */}
-      <div className="rounded-xl border border-border/80 bg-card/60 p-4 shadow-2xs backdrop-blur-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <motion.div
+        initial={shouldReduceMotion ? {} : { opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, delay: 0.08, ease: standardEase }}
+        className="rounded-xl border border-border/80 bg-card/60 p-4 shadow-2xs backdrop-blur-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
         <div className="flex items-center gap-3 min-w-0">
           <div className="p-2.5 rounded-lg bg-primary/10 text-primary border border-primary/20 shrink-0">
             <FileText className="h-5 w-5" />
@@ -488,152 +501,167 @@ export default function DashboardView({ insights, initialResume }) {
             )}
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       {/* ========================================================================= */}
       {/* 2. TOP METRICS (COMMAND CENTER HIERARCHY)                                 */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-stretch">
+      <motion.div
+        initial={shouldReduceMotion ? {} : "hidden"}
+        animate="visible"
+        variants={staggerContainerVariants}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-stretch"
+      >
         {/* Market Outlook (Featured Focal Metric) */}
-        <Card className={`transition-all duration-200 shadow-xs hover:shadow-md ${outlookConfig.cardBorder}`}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Market Outlook
-            </span>
-            <div className={`p-2 rounded-lg bg-background/80 border border-border/60 ${outlookConfig.iconColor}`}>
-              <OutlookIcon className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-                {insights?.marketOutlook || "Neutral"}
+        <motion.div variants={staggerItemVariants}>
+          <Card className={`transition-all duration-200 shadow-xs hover:shadow-md ${outlookConfig.cardBorder} h-full`}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                Market Outlook
               </span>
-              <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${outlookConfig.badgeClass}`}>
-                Cycle
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {outlookConfig.description}
-            </p>
-          </CardContent>
-        </Card>
+              <div className={`p-2 rounded-lg bg-background/80 border border-border/60 ${outlookConfig.iconColor}`}>
+                <OutlookIcon className="h-4 w-4" />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+                  {insights?.marketOutlook || "Neutral"}
+                </span>
+                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${outlookConfig.badgeClass}`}>
+                  Cycle
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {outlookConfig.description}
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Industry Growth */}
-        <Card className="hover:border-primary/40 hover:shadow-card transition-all duration-200">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Industry Growth
-            </span>
-            <div className="p-2 rounded-lg bg-background/80 border border-border/60 text-primary">
-              <TrendingUp className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground font-mono">
-              {insights?.growthRate !== undefined ? `${insights.growthRate.toFixed(1)}%` : "0.0%"}
-            </div>
-            <Progress value={Math.min(insights?.growthRate || 0, 100)} className="h-1.5" />
-            <p className="text-xs text-muted-foreground">
-              Annual projected expansion rate
-            </p>
-          </CardContent>
-        </Card>
+        <motion.div variants={staggerItemVariants}>
+          <Card className="hover:border-primary/40 hover:shadow-card transition-all duration-200 h-full">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                Industry Growth
+              </span>
+              <div className="p-2 rounded-lg bg-background/80 border border-border/60 text-primary">
+                <TrendingUp className="h-4 w-4" />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground font-mono">
+                {insights?.growthRate !== undefined ? `${insights.growthRate.toFixed(1)}%` : "0.0%"}
+              </div>
+              <Progress value={Math.min(insights?.growthRate || 0, 100)} className="h-1.5" />
+              <p className="text-xs text-muted-foreground">
+                Annual projected expansion rate
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Demand Level */}
-        <Card className="hover:border-primary/40 hover:shadow-card transition-all duration-200">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Demand Level
-            </span>
-            <div className={`p-2 rounded-lg bg-background/80 border border-border/60 ${demandConfig.colorClass}`}>
-              <Zap className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-                {insights?.demandLevel || "Medium"}
+        <motion.div variants={staggerItemVariants}>
+          <Card className="hover:border-primary/40 hover:shadow-card transition-all duration-200 h-full">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                Demand Level
               </span>
-              <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${demandConfig.badgeClass}`}>
-                Velocity
-              </span>
-            </div>
-            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all duration-500 ${demandConfig.barColor}`}
-                style={{ width: `${demandConfig.percentage}%` }}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Hiring velocity & role creation
-            </p>
-          </CardContent>
-        </Card>
+              <div className={`p-2 rounded-lg bg-background/80 border border-border/60 ${demandConfig.colorClass}`}>
+                <Zap className="h-4 w-4" />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+                  {insights?.demandLevel || "Medium"}
+                </span>
+                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${demandConfig.badgeClass}`}>
+                  Velocity
+                </span>
+              </div>
+              <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${demandConfig.barColor}`}
+                  style={{ width: `${demandConfig.percentage}%` }}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Hiring velocity & role creation
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Active Job Openings */}
-        <Card className="hover:border-primary/40 hover:shadow-card transition-all duration-200 sm:col-span-2 lg:col-span-1">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Job Openings
-            </span>
-            <div className="p-2 rounded-lg bg-background/80 border border-border/60 text-primary">
-              <Briefcase className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground font-mono">
-              {(insights?.jobOpenings || 0).toLocaleString("en-US")}
-            </div>
-            <div className="flex items-center gap-1.5 text-xs">
-              {Number(insights?.jobOpeningsChange) >= 0 ? (
-                <span className="inline-flex items-center text-emerald-600 dark:text-emerald-400 font-bold gap-0.5 bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                  <ArrowUpRight className="h-3.5 w-3.5" />
-                  +{insights?.jobOpeningsChange}%
-                </span>
-              ) : (
-                <span className="inline-flex items-center text-rose-600 dark:text-rose-400 font-bold gap-0.5 bg-rose-500/10 px-1.5 py-0.5 rounded">
-                  <ArrowDownRight className="h-3.5 w-3.5" />
-                  {insights?.jobOpeningsChange}%
-                </span>
-              )}
-              <span className="text-muted-foreground">vs last month</span>
-            </div>
-          </CardContent>
-        </Card>
+        <motion.div variants={staggerItemVariants} className="sm:col-span-2 lg:col-span-1">
+          <Card className="hover:border-primary/40 hover:shadow-card transition-all duration-200 h-full">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                Job Openings
+              </span>
+              <div className="p-2 rounded-lg bg-background/80 border border-border/60 text-primary">
+                <Briefcase className="h-4 w-4" />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground font-mono">
+                {(insights?.jobOpenings || 0).toLocaleString("en-US")}
+              </div>
+              <div className="flex items-center gap-1.5 text-xs">
+                {Number(insights?.jobOpeningsChange) >= 0 ? (
+                  <span className="inline-flex items-center text-emerald-600 dark:text-emerald-400 font-bold gap-0.5 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                    <ArrowUpRight className="h-3.5 w-3.5" />
+                    +{insights?.jobOpeningsChange}%
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center text-rose-600 dark:text-rose-400 font-bold gap-0.5 bg-rose-500/10 px-1.5 py-0.5 rounded">
+                    <ArrowDownRight className="h-3.5 w-3.5" />
+                    {insights?.jobOpeningsChange}%
+                  </span>
+                )}
+                <span className="text-muted-foreground">vs last month</span>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Top In-Demand Skills */}
-        <Card className="hover:border-primary/40 hover:shadow-card transition-all duration-200 sm:col-span-2 lg:col-span-1">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Top Industry Skills
-            </span>
-            <div className="p-2 rounded-lg bg-background/80 border border-border/60 text-primary">
-              <Brain className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-              {insights?.topSkills?.length || 0} In-Demand
-            </div>
-            <div className="flex flex-wrap gap-1.5 pt-0.5">
-              {(insights?.topSkills || []).slice(0, 3).map((skill) => (
-                <span
-                  key={skill}
-                  className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-secondary text-secondary-foreground border border-border/60"
-                >
-                  {skill}
-                </span>
-              ))}
-              {(insights?.topSkills?.length || 0) > 3 && (
-                <span className="text-[11px] text-muted-foreground font-medium px-1 py-0.5">
-                  +{(insights.topSkills.length - 3)} more
-                </span>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        <motion.div variants={staggerItemVariants} className="sm:col-span-2 lg:col-span-1">
+          <Card className="hover:border-primary/40 hover:shadow-card transition-all duration-200 h-full">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                Top Industry Skills
+              </span>
+              <div className="p-2 rounded-lg bg-background/80 border border-border/60 text-primary">
+                <Brain className="h-4 w-4" />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+                {insights?.topSkills?.length || 0} In-Demand
+              </div>
+              <div className="flex flex-wrap gap-1.5 pt-0.5">
+                {(insights?.topSkills || []).slice(0, 3).map((skill) => (
+                  <span
+                    key={skill}
+                    className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-secondary text-secondary-foreground border border-border/60"
+                  >
+                    {skill}
+                  </span>
+                ))}
+                {(insights?.topSkills?.length || 0) > 3 && (
+                  <span className="text-[11px] text-muted-foreground font-medium px-1 py-0.5">
+                    +{(insights.topSkills.length - 3)} more
+                  </span>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
 
       {/* ========================================================================= */}
       {/* 3. SALARY INTELLIGENCE (PRIMARY ANALYTICAL VISUALIZATION)                  */}

@@ -1,4 +1,5 @@
 import { Inter } from "next/font/google";
+import Link from "next/link";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import Header from "@/components/header";
@@ -114,9 +115,9 @@ export default async function RootLayout({ children }) {
                 </div>
                 <p>© {new Date().getFullYear()} CareerWise. All rights reserved.</p>
                 <div className="flex items-center gap-4">
-                  <span className="hover:text-foreground transition-colors cursor-pointer">Privacy</span>
-                  <span className="hover:text-foreground transition-colors cursor-pointer">Terms</span>
-                  <span className="hover:text-foreground transition-colors cursor-pointer">Security</span>
+                  <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+                  <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+                  <Link href="/security" className="hover:text-foreground transition-colors">Security</Link>
                 </div>
               </div>
             </footer>

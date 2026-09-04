@@ -1,6 +1,14 @@
 "use client";
 
 import React, { useMemo } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import {
+  fadeUpVariants,
+  createStaggerContainer,
+  staggerItemVariants,
+  defaultViewport,
+  standardEase,
+} from "@/lib/motion-variants";
 import {
   Sparkles,
   CheckCircle2,
@@ -47,11 +55,11 @@ function getScoreEvaluation(score) {
   if (numericScore >= 70) {
     return {
       status: "Good",
-      colorClass: "text-sky-600 dark:text-sky-400",
-      bgClass: "bg-sky-500/15",
-      borderClass: "border-sky-500/30",
-      progressColor: "bg-sky-500",
-      ringStroke: "#0ea5e9",
+      colorClass: "text-blue-600 dark:text-blue-400",
+      bgClass: "bg-blue-500/10",
+      borderClass: "border-blue-500/30",
+      progressColor: "bg-blue-500",
+      ringStroke: "#3b82f6",
     };
   }
   if (numericScore >= 50) {
@@ -110,6 +118,8 @@ function getSectionFeedback(sectionKey, score, providedComment) {
 }
 
 export default function ResumeAnalysis({ data }) {
+  const shouldReduceMotion = useReducedMotion();
+
   if (!data) {
     return (
       <Card className="p-8 text-center bg-card border border-border">
@@ -188,7 +198,12 @@ export default function ResumeAnalysis({ data }) {
       {/* ========================================================================= */}
       {/* 1. REPORT HEADER & VERIFICATION STATUS                                    */}
       {/* ========================================================================= */}
-      <div className="relative rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card/85 to-card/50 p-6 md:p-8 shadow-xs backdrop-blur-xs">
+      <motion.div
+        initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: shouldReduceMotion ? 0 : 0.45, ease: standardEase }}
+        className="relative rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card/85 to-card/50 p-6 md:p-8 shadow-xs backdrop-blur-xs"
+      >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
@@ -220,121 +235,128 @@ export default function ResumeAnalysis({ data }) {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* ========================================================================= */}
       {/* 2. OVERALL SCORE & EXECUTIVE SUMMARY (FOCAL POINT)                        */}
       {/* ========================================================================= */}
-      <Card className="border border-border/80 bg-card shadow-card overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-12">
-          {/* Left: Circular Score Ring Visualizer */}
-          <div className="lg:col-span-4 p-6 sm:p-8 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-border/60 bg-muted/20">
-            <div className="relative flex items-center justify-center">
-              <svg className="w-40 h-40 transform -rotate-90" viewBox="0 0 140 140">
-                {/* Background Ring */}
-                <circle
-                  cx="70"
-                  cy="70"
-                  r={radius}
-                  stroke="currentColor"
-                  strokeWidth="10"
-                  className="text-muted/40"
-                  fill="transparent"
-                />
-                {/* Dynamic Progress Ring */}
-                <circle
-                  cx="70"
-                  cy="70"
-                  r={radius}
-                  stroke={overallEval.ringStroke}
-                  strokeWidth="10"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
-                  className="transition-all duration-1000 ease-out"
-                  fill="transparent"
-                />
-              </svg>
+      <motion.div
+        initial={shouldReduceMotion ? false : "hidden"}
+        whileInView="visible"
+        viewport={defaultViewport}
+        variants={fadeUpVariants}
+      >
+        <Card className="border border-border/80 bg-card shadow-card overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12">
+            {/* Left: Circular Score Ring Visualizer */}
+            <div className="lg:col-span-4 p-6 sm:p-8 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-border/60 bg-muted/20">
+              <div className="relative flex items-center justify-center">
+                <svg className="w-40 h-40 transform -rotate-90" viewBox="0 0 140 140">
+                  {/* Background Ring */}
+                  <circle
+                    cx="70"
+                    cy="70"
+                    r={radius}
+                    stroke="currentColor"
+                    strokeWidth="10"
+                    className="text-muted/40"
+                    fill="transparent"
+                  />
+                  {/* Dynamic Progress Ring */}
+                  <circle
+                    cx="70"
+                    cy="70"
+                    r={radius}
+                    stroke={overallEval.ringStroke}
+                    strokeWidth="10"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={strokeDashoffset}
+                    strokeLinecap="round"
+                    className="transition-all duration-1000 ease-out"
+                    fill="transparent"
+                  />
+                </svg>
 
-              {/* Center Score Readout */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                <span className="text-4xl font-extrabold tracking-tight text-foreground font-mono">
-                  {overallScore}
-                </span>
-                <span className="text-xs font-semibold text-muted-foreground tracking-wider">
-                  / 100
-                </span>
-              </div>
-            </div>
-
-            {/* Semantic Status Badge */}
-            <div className="mt-4 flex flex-col items-center space-y-1">
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${overallEval.bgClass} ${overallEval.colorClass} ${overallEval.borderClass}`}>
-                <Target className="h-3 w-3" />
-                {overallEval.status}
-              </span>
-              <span className="text-xs text-muted-foreground font-medium">
-                Overall Resume Quality
-              </span>
-            </div>
-          </div>
-
-          {/* Right: Executive Feedback & Summary */}
-          <div className="lg:col-span-8 p-6 sm:p-8 flex flex-col justify-between space-y-6">
-            <div className="space-y-4">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-primary">
-                  Executive Assessment
-                </span>
-                <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-1">
-                  Summary & Diagnostic Verdict
-                </h3>
-              </div>
-
-              {data.summaryComment && (
-                <div className="p-4 rounded-xl border border-border/70 bg-background/60 backdrop-blur-xs">
-                  <p className="text-sm md:text-base text-foreground/90 leading-relaxed">
-                    {data.summaryComment}
-                  </p>
-                </div>
-              )}
-
-              {data.overallFeedback && (
-                <div className="space-y-1.5">
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Feedback Overview
+                {/* Center Score Readout */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                  <span className="text-4xl font-extrabold tracking-tight text-foreground font-mono">
+                    {overallScore}
                   </span>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {data.overallFeedback}
-                  </p>
+                  <span className="text-xs font-semibold text-muted-foreground tracking-wider">
+                    / 100
+                  </span>
                 </div>
-              )}
+              </div>
+
+              {/* Semantic Status Badge */}
+              <div className="mt-4 flex flex-col items-center space-y-1">
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${overallEval.bgClass} ${overallEval.colorClass} ${overallEval.borderClass}`}>
+                  <Target className="h-3 w-3" />
+                  {overallEval.status}
+                </span>
+                <span className="text-xs text-muted-foreground font-medium">
+                  Overall Resume Quality
+                </span>
+              </div>
             </div>
 
-            {/* Quick Metrics Bar */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-4 border-t border-border/60">
-              <div className="p-3 rounded-lg bg-muted/40">
-                <p className="text-xs text-muted-foreground">ATS Benchmark</p>
-                <p className="text-lg font-bold text-foreground font-mono mt-0.5">
-                  {atsScore}%
-                </p>
+            {/* Right: Executive Feedback & Summary */}
+            <div className="lg:col-span-8 p-6 sm:p-8 flex flex-col justify-between space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                    Executive Assessment
+                  </span>
+                  <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-1">
+                    Summary & Diagnostic Verdict
+                  </h3>
+                </div>
+
+                {data.summaryComment && (
+                  <div className="p-4 rounded-xl border border-border/70 bg-background/60 backdrop-blur-xs">
+                    <p className="text-sm md:text-base text-foreground/90 leading-relaxed">
+                      {data.summaryComment}
+                    </p>
+                  </div>
+                )}
+
+                {data.overallFeedback && (
+                  <div className="space-y-1.5">
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      Feedback Overview
+                    </span>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {data.overallFeedback}
+                    </p>
+                  </div>
+                )}
               </div>
-              <div className="p-3 rounded-lg bg-muted/40">
-                <p className="text-xs text-muted-foreground">Keyword Matches</p>
-                <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-0.5">
-                  {data.keywordMatches?.length || 0} Found
-                </p>
-              </div>
-              <div className="p-3 rounded-lg bg-muted/40 col-span-2 sm:col-span-1">
-                <p className="text-xs text-muted-foreground">Skill Gaps</p>
-                <p className="text-lg font-bold text-amber-600 dark:text-amber-400 font-mono mt-0.5">
-                  {data.keywordGaps?.length || 0} Identified
-                </p>
+
+              {/* Quick Metrics Bar */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-4 border-t border-border/60">
+                <div className="p-3 rounded-lg bg-muted/40">
+                  <p className="text-xs text-muted-foreground">ATS Benchmark</p>
+                  <p className="text-lg font-bold text-foreground font-mono mt-0.5">
+                    {atsScore}%
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted/40">
+                  <p className="text-xs text-muted-foreground">Keyword Matches</p>
+                  <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-0.5">
+                    {data.keywordMatches?.length || 0} Found
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted/40 col-span-2 sm:col-span-1">
+                  <p className="text-xs text-muted-foreground">Skill Gaps</p>
+                  <p className="text-lg font-bold text-amber-600 dark:text-amber-400 font-mono mt-0.5">
+                    {data.keywordGaps?.length || 0} Identified
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      </motion.div>
 
       {/* ========================================================================= */}
       {/* 3. SECTION SCORES (4 CORE DIMENSIONS)                                     */}
@@ -349,214 +371,243 @@ export default function ResumeAnalysis({ data }) {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div
+          initial={shouldReduceMotion ? false : "hidden"}
+          whileInView="visible"
+          viewport={defaultViewport}
+          variants={createStaggerContainer(0.08, 0.1)}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+        >
           {sections.map((sec) => {
             const SectionIcon = sec.icon;
             const evalInfo = getScoreEvaluation(sec.score);
 
             return (
-              <Card
+              <motion.div
                 key={sec.key}
-                className="hover:border-primary/40 hover:shadow-card transition-all duration-200 flex flex-col justify-between"
+                variants={staggerItemVariants}
+                className="h-full"
               >
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                      <SectionIcon className="h-4 w-4" />
-                    </div>
-                    <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${evalInfo.bgClass} ${evalInfo.colorClass} ${evalInfo.borderClass}`}>
-                      {evalInfo.status}
-                    </span>
-                  </div>
-                  <CardTitle className="text-base font-bold tracking-tight text-foreground pt-2">
-                    {sec.title}
-                  </CardTitle>
-                </CardHeader>
-
-                <CardContent className="space-y-3">
-                  <div>
-                    <div className="flex items-baseline justify-between mb-1.5">
-                      <span className="text-2xl font-extrabold tracking-tight text-foreground font-mono">
-                        {sec.score}%
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        Target: 80%+
+                <Card className="hover:border-primary/40 hover:shadow-card transition-all duration-200 flex flex-col justify-between h-full">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                        <SectionIcon className="h-4 w-4" />
+                      </div>
+                      <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${evalInfo.bgClass} ${evalInfo.colorClass} ${evalInfo.borderClass}`}>
+                        {evalInfo.status}
                       </span>
                     </div>
-                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${evalInfo.progressColor}`}
-                        style={{ width: `${Math.min(sec.score, 100)}%` }}
-                      />
-                    </div>
-                  </div>
+                    <CardTitle className="text-base font-bold tracking-tight text-foreground pt-2">
+                      {sec.title}
+                    </CardTitle>
+                  </CardHeader>
 
-                  <p className="text-xs text-muted-foreground leading-relaxed pt-1">
-                    {sec.comment}
-                  </p>
-                </CardContent>
-              </Card>
+                  <CardContent className="space-y-3">
+                    <div>
+                      <div className="flex items-baseline justify-between mb-1.5">
+                        <span className="text-2xl font-extrabold tracking-tight text-foreground font-mono">
+                          {sec.score}%
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          Target: 80%+
+                        </span>
+                      </div>
+                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${evalInfo.progressColor}`}
+                          style={{ width: `${Math.min(sec.score, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground leading-relaxed pt-1">
+                      {sec.comment}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
 
       {/* ========================================================================= */}
       {/* 4. ATS ANALYSIS & KEYWORDS (MATCHES & GAPS)                                */}
       {/* ========================================================================= */}
-      <Card className="border border-border/80 shadow-xs">
-        <CardHeader className="border-b border-border/50 pb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="space-y-1">
-              <CardTitle className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                <Bot className="h-5 w-5 text-primary" />
-                <span>ATS Parsing & Keyword Optimization</span>
-              </CardTitle>
-              <CardDescription className="text-xs md:text-sm text-muted-foreground">
-                How effectively corporate Applicant Tracking Systems extract and parse your profile.
-              </CardDescription>
+      <motion.div
+        initial={shouldReduceMotion ? false : "hidden"}
+        whileInView="visible"
+        viewport={defaultViewport}
+        variants={fadeUpVariants}
+      >
+        <Card className="border border-border/80 shadow-xs">
+          <CardHeader className="border-b border-border/50 pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-1">
+                <CardTitle className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                  <Bot className="h-5 w-5 text-primary" />
+                  <span>ATS Parsing & Keyword Optimization</span>
+                </CardTitle>
+                <CardDescription className="text-xs md:text-sm text-muted-foreground">
+                  How effectively corporate Applicant Tracking Systems extract and parse your profile.
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs font-bold px-3 py-1 rounded-full border ${atsEval.bgClass} ${atsEval.colorClass} ${atsEval.borderClass}`}>
+                  ATS Score: {atsScore}%
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className={`text-xs font-bold px-3 py-1 rounded-full border ${atsEval.bgClass} ${atsEval.colorClass} ${atsEval.borderClass}`}>
-                ATS Score: {atsScore}%
-              </span>
-            </div>
-          </div>
-        </CardHeader>
+          </CardHeader>
 
-        <CardContent className="pt-6 space-y-6">
-          {data.atsComment && (
-            <div className="p-4 rounded-xl border border-border/70 bg-muted/20">
-              <p className="text-sm text-foreground/90 leading-relaxed">
-                {data.atsComment}
-              </p>
-            </div>
-          )}
+          <CardContent className="pt-6 space-y-6">
+            {data.atsComment && (
+              <div className="p-4 rounded-xl border border-border/70 bg-muted/20">
+                <p className="text-sm text-foreground/90 leading-relaxed">
+                  {data.atsComment}
+                </p>
+              </div>
+            )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Keyword Matches */}
-            <div className="space-y-3 p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  <h4 className="font-semibold text-sm text-foreground">Keyword Matches</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Keyword Matches */}
+              <div className="space-y-3 p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <h4 className="font-semibold text-sm text-foreground">Keyword Matches</h4>
+                  </div>
+                  <Badge variant="outline" className="text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+                    {data.keywordMatches?.length || 0} Detected
+                  </Badge>
                 </div>
-                <Badge variant="outline" className="text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
-                  {data.keywordMatches?.length || 0} Detected
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Recognized keywords matching high-volume industry search patterns.
-              </p>
+                <p className="text-xs text-muted-foreground">
+                  Recognized keywords matching high-volume industry search patterns.
+                </p>
 
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {data.keywordMatches && data.keywordMatches.length > 0 ? (
-                  data.keywordMatches.map((kw, i) => (
-                    <span
-                      key={i}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
-                    >
-                      <Check className="h-3 w-3 text-emerald-500" />
-                      {kw}
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-xs text-muted-foreground italic">No primary keyword matches detected.</span>
-                )}
-              </div>
-            </div>
-
-            {/* Keyword Gaps */}
-            <div className="space-y-3 p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                  <h4 className="font-semibold text-sm text-foreground">Keyword Gaps</h4>
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {data.keywordMatches && data.keywordMatches.length > 0 ? (
+                    data.keywordMatches.map((kw, i) => (
+                      <span
+                        key={i}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
+                      >
+                        <Check className="h-3 w-3 text-emerald-500" />
+                        {kw}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-muted-foreground italic">No primary keyword matches detected.</span>
+                  )}
                 </div>
-                <Badge variant="outline" className="text-xs text-amber-600 dark:text-amber-400 border-amber-500/30">
-                  {data.keywordGaps?.length || 0} Suggested
-                </Badge>
               </div>
-              <p className="text-xs text-muted-foreground">
-                High-frequency keywords missing from your resume that recruiters search for.
-              </p>
 
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {data.keywordGaps && data.keywordGaps.length > 0 ? (
-                  data.keywordGaps.map((kw, i) => (
-                    <span
-                      key={i}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30"
-                    >
-                      <Plus className="h-3 w-3 text-amber-500" />
-                      {kw}
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-xs text-muted-foreground italic">No critical keyword gaps identified.</span>
-                )}
+              {/* Keyword Gaps */}
+              <div className="space-y-3 p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                    <h4 className="font-semibold text-sm text-foreground">Keyword Gaps</h4>
+                  </div>
+                  <Badge variant="outline" className="text-xs text-amber-600 dark:text-amber-400 border-amber-500/30">
+                    {data.keywordGaps?.length || 0} Suggested
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  High-frequency keywords missing from your resume that recruiters search for.
+                </p>
+
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {data.keywordGaps && data.keywordGaps.length > 0 ? (
+                    data.keywordGaps.map((kw, i) => (
+                      <span
+                        key={i}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                      >
+                        <Plus className="h-3 w-3 text-amber-500" />
+                        {kw}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-muted-foreground italic">No critical keyword gaps identified.</span>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* ========================================================================= */}
       {/* 5. ACTIONABLE IMPROVEMENT TIPS                                            */}
       {/* ========================================================================= */}
-      <Card className="border border-border/80 shadow-xs">
-        <CardHeader className="border-b border-border/50 pb-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <CardTitle className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                <Lightbulb className="h-5 w-5 text-amber-500" />
-                <span>Actionable Improvement Tips</span>
-              </CardTitle>
-              <CardDescription className="text-xs md:text-sm text-muted-foreground">
-                Prioritized recommendations to convert your resume into an interview magnet.
-              </CardDescription>
+      <motion.div
+        initial={shouldReduceMotion ? false : "hidden"}
+        whileInView="visible"
+        viewport={defaultViewport}
+        variants={fadeUpVariants}
+      >
+        <Card className="border border-border/80 shadow-xs">
+          <CardHeader className="border-b border-border/50 pb-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <CardTitle className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5 text-amber-500" />
+                  <span>Actionable Improvement Tips</span>
+                </CardTitle>
+                <CardDescription className="text-xs md:text-sm text-muted-foreground">
+                  Prioritized recommendations to convert your resume into an interview magnet.
+                </CardDescription>
+              </div>
+              <Badge variant="outline" className="text-xs">
+                {data.tipsForImprovement?.length || 0} Actions
+              </Badge>
             </div>
-            <Badge variant="outline" className="text-xs">
-              {data.tipsForImprovement?.length || 0} Actions
-            </Badge>
-          </div>
-        </CardHeader>
+          </CardHeader>
 
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {(data.tipsForImprovement || []).map((tip, idx) => {
-              // Parse if tip has a problem -> recommendation structure
-              const parts = tip.split(/:\s*|\s*-\s*|\s*→\s*/);
-              const title = parts.length > 1 ? parts[0] : `Priority Action #${idx + 1}`;
-              const description = parts.length > 1 ? parts.slice(1).join(" — ") : tip;
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {(data.tipsForImprovement || []).map((tip, idx) => {
+                // Parse if tip has a problem -> recommendation structure
+                const parts = tip.split(/:\s*|\s*-\s*|\s*→\s*/);
+                const title = parts.length > 1 ? parts[0] : `Priority Action #${idx + 1}`;
+                const description = parts.length > 1 ? parts.slice(1).join(" — ") : tip;
 
-              return (
-                <div
-                  key={idx}
-                  className="flex items-start gap-3.5 p-4 rounded-xl border border-border/70 bg-card hover:border-primary/40 hover:shadow-xs transition-all"
-                >
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary text-xs font-bold font-mono">
-                    {idx + 1}
-                  </span>
-                  <div className="space-y-1 min-w-0">
-                    <h5 className="font-semibold text-sm text-foreground flex items-center gap-1.5">
-                      <span>{title}</span>
-                    </h5>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {description}
-                    </p>
+                return (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-3.5 p-4 rounded-xl border border-border/70 bg-card hover:border-primary/40 hover:shadow-xs transition-all"
+                  >
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary text-xs font-bold font-mono">
+                      {idx + 1}
+                    </span>
+                    <div className="space-y-1 min-w-0">
+                      <h5 className="font-semibold text-sm text-foreground flex items-center gap-1.5">
+                        <span>{title}</span>
+                      </h5>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {description}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* ========================================================================= */}
       {/* 6. WHAT'S WORKING WELL VS. AREAS FOR IMPROVEMENT                          */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <motion.div
+        initial={shouldReduceMotion ? false : "hidden"}
+        whileInView="visible"
+        viewport={defaultViewport}
+        variants={fadeUpVariants}
+        className="grid grid-cols-1 md:grid-cols-2 gap-6"
+      >
         {/* What's Working Well */}
         <Card className="border border-emerald-500/30 bg-card shadow-xs hover:border-emerald-500/50 transition-colors">
           <CardHeader className="border-b border-border/50 pb-4">
@@ -616,7 +667,7 @@ export default function ResumeAnalysis({ data }) {
             </ul>
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
     </div>
   );
 }

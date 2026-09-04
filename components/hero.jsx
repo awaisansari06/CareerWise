@@ -5,13 +5,16 @@ import React, { useEffect, useRef, useState } from "react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import Image from "next/image";
-import { ArrowRight, Sparkles, CheckCircle2, ShieldCheck, Zap } from "lucide-react";
+import { ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
 import { useTheme } from "next-themes";
+import { motion, useReducedMotion } from "framer-motion";
+import { standardEase } from "@/lib/motion-variants";
 
 const HeroSection = () => {
   const imageRef = useRef(null);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
 
   // Mount guard prevents hydration mismatch:
   // On server / first paint we default to the dark banner since the app
@@ -44,28 +47,50 @@ const HeroSection = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Motion helpers that respect reduced-motion
+  const getFadeUp = (delay = 0, y = 16) => {
+    if (shouldReduceMotion) return {};
+    return {
+      initial: { opacity: 0, y },
+      animate: { opacity: 1, y: 0 },
+      transition: { duration: 0.5, delay, ease: standardEase },
+    };
+  };
+
   return (
     <section className="relative w-full pt-28 sm:pt-36 md:pt-44 pb-12 sm:pb-20 overflow-hidden">
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex flex-col items-center text-center space-y-6 max-w-4xl mx-auto">
           {/* Top Innovation Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-xs sm:text-sm font-semibold text-foreground backdrop-blur-md shadow-2xs">
+          <motion.div
+            {...getFadeUp(0.05, 12)}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-xs sm:text-sm font-semibold text-foreground backdrop-blur-md shadow-2xs"
+          >
             <Sparkles className="h-3.5 w-3.5 text-amber-500 animate-pulse" />
             <span>AI-Powered Career Intelligence Platform</span>
-          </div>
+          </motion.div>
 
           {/* Main Headline */}
-          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight gradient-title leading-[1.15] sm:leading-[1.12]">
+          <motion.h1
+            {...getFadeUp(0.15, 16)}
+            className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight gradient-title leading-[1.15] sm:leading-[1.12]"
+          >
             Turn Your Experience Into Your Next Opportunity
-          </h1>
+          </motion.h1>
 
           {/* Subtitle */}
-          <p className="max-w-2xl text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
+          <motion.p
+            {...getFadeUp(0.25, 16)}
+            className="max-w-2xl text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed"
+          >
             CareerWise analyzes where you are today, identifies what is holding you back, and helps you prepare for the roles you actually want — from resume improvement to interview readiness and career planning.
-          </p>
+          </motion.p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-2 w-full sm:w-auto">
+          <motion.div
+            {...getFadeUp(0.35, 16)}
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-2 w-full sm:w-auto"
+          >
             <Button
               asChild
               size="lg"
@@ -87,10 +112,13 @@ const HeroSection = () => {
                 <span>Explore Features</span>
               </Link>
             </Button>
-          </div>
+          </motion.div>
 
           {/* Micro Value Proposition Bar */}
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-2 text-xs text-muted-foreground font-medium">
+          <motion.div
+            {...getFadeUp(0.45, 10)}
+            className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-2 text-xs text-muted-foreground font-medium"
+          >
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
               <span>Resume-driven recommendations</span>
@@ -103,11 +131,16 @@ const HeroSection = () => {
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
               <span>Real-time market intelligence</span>
             </span>
-          </div>
+          </motion.div>
         </div>
 
         {/* Hero Product Banner Preview with Subtle Ambient Glow */}
-        <div className="relative hero-image-wrapper mt-12 sm:mt-16 max-w-5xl mx-auto">
+        <motion.div
+          initial={shouldReduceMotion ? {} : { opacity: 0, y: 20, scale: 0.98 }}
+          animate={shouldReduceMotion ? {} : { opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.5, ease: standardEase }}
+          className="relative hero-image-wrapper mt-12 sm:mt-16 max-w-5xl mx-auto"
+        >
           {/* Subtle Ambient Cyan/Blue Glow behind Image */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-48 bg-sky-500/15 dark:bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -126,7 +159,7 @@ const HeroSection = () => {
               />
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
