@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import DashboardView from "./_components/dashboard-view";
 import { privatePageRobots } from "@/lib/site-config";
 
+export const maxDuration = 60;
+
 export const metadata = {
   title: "Career Intelligence Command Center",
   description: "View your real-time industry intelligence, salary benchmarks, and career growth metrics.",

@@ -4,6 +4,8 @@ import { getUserOnboardingStatus } from "@/actions/user";
 import { redirect } from "next/navigation";
 import { privatePageRobots } from "@/lib/site-config";
 
+export const maxDuration = 60;
+
 export const metadata = {
   title: "Resume Analysis & ATS Diagnostic",
   description: "Detailed resume analysis, ATS compatibility scoring, and personalized improvement suggestions.",

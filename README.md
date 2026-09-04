@@ -423,8 +423,7 @@ CareerWise/
 ├── 📁 public/                  # Public static assets
 │   ├── Banner-Dark.png         # Dark mode application banner preview
 │   ├── Banner-Light.png        # Light mode application banner preview
-│   ├── favicon.svg             # Static favicon fallback
-│   └── icon.svg                # Brand icon asset
+│   └── favicon.svg             # Static favicon fallback
 ├── 📁 tests/                   # Automated test suites (165 automated tests)
 ├── .env.example                # Environment variable template
 ├── .gitignore                  # Git ignore rules
