@@ -1,10 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <!-- Deep Navy Foundation -->
-  <rect width="32" height="32" rx="7.5" fill="#0B132B" stroke="#1E293B" stroke-width="1"/>
-  <!-- C Arc (Cyan) -->
-  <path d="M17.5 9H13C9.1 9 6 12.1 6 16C6 19.9 9.1 23 13 23H17.5" stroke="#38BDF8" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- Arrow Stem (Electric Blue) -->
-  <line x1="21" y1="23" x2="21" y2="10" stroke="#2563EB" stroke-width="2.7" stroke-linecap="round"/>
-  <!-- Arrowhead (Electric Blue) -->
-  <polyline points="17.5,13.5 21,9.5 24.5,13.5" stroke="#2563EB" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="22 15 30 32" fill="none">
+  <style>
+    .c-shape { fill: #0066CC; }
+    .arrow { stroke: #64748B; }
+    @media (prefers-color-scheme: dark) {
+      .c-shape { fill: #4DB8FF; }
+      .arrow { stroke: #94A3B8; }
+    }
+  </style>
+  <!-- Bold C shape -->
+  <path class="c-shape" d="M38 18C30 18 24 23 24 32C24 41 30 46 38 46C42 46 45 44 48 41L48 38C46 40 43 41 39 41C34 41 30 38 30 32C30 26 34 23 39 23C43 23 46 25 48 28V25C45 22 42 18 38 18Z"/>
+  <!-- Gray zigzag arrow -->
+  <path class="arrow" d="M26 38L32 28L38 36L48 22" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Arrow head -->
+  <path class="arrow" d="M42 18L48 22L46 27" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
+

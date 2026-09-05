@@ -21,13 +21,13 @@ export default async function Header() {
     <header className="fixed top-0 w-full border-b border-border/80 bg-background/85 backdrop-blur-md z-50 transition-colors duration-200">
       <nav className="container mx-auto px-3 sm:px-4 h-16 flex items-center justify-between">
         {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-2 group shrink-0">
+        <Link href="/" className="flex items-center gap-2.5 group shrink-0">
           <CareerWiseLogo
-            className="h-8 w-8 transition-transform group-hover:scale-105 duration-200"
+            className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 transition-transform group-hover:scale-105 duration-200"
           />
           <div className="flex items-center">
-            <span className="font-extrabold text-base sm:text-lg md:text-xl tracking-tight text-foreground">
-              CAREERWISE
+            <span className="font-extrabold text-base sm:text-lg md:text-xl font-serif italic tracking-tight text-foreground">
+              CareerWise
             </span>
           </div>
         </Link>
