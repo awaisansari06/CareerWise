@@ -60,7 +60,7 @@ JSON format:
 {
   "name": "string",
   "email": "string",
-  "phone": "string",
+  "phone": "string or empty string if not available",
   "education": ["string"],
   "experience": ["string"],
   "skills": ["string"],
@@ -122,40 +122,8 @@ Return only valid JSON.`,
       where: { userId: user.id },
     });
 
-    // 7. Re-evaluate career industry if the new resume indicates a meaningful career direction
-    function isSameIndustryDomain(a, b) {
-      if (!a || !b) return false;
-      const cleanA = a.toLowerCase().replace(/[^a-z0-9]/g, "");
-      const cleanB = b.toLowerCase().replace(/[^a-z0-9]/g, "");
-      if (cleanA === cleanB) return true;
-
-      const domains = [
-        { name: "tech", keys: ["software", "programming", "web development", "computer science", "data science", "devops", "cloud", "it & software", "cybersecurity", "frontend", "backend", "full stack"] },
-        { name: "business", keys: ["business administration", "management", "operations", "consulting", "strategy", "project management"] },
-        { name: "office", keys: ["office administration", "administrative", "clerical", "secretarial", "office management", "data entry"] },
-        { name: "finance", keys: ["finance", "accounting", "banking", "audit", "investment", "tax"] },
-        { name: "health", keys: ["healthcare", "nursing", "medicine", "medical", "clinical", "pharmacy"] },
-        { name: "marketing", keys: ["marketing", "seo", "content strategy", "advertising", "public relations", "branding", "social media"] },
-        { name: "education", keys: ["education", "teaching", "academic", "instruction", "pedagogy"] },
-        { name: "legal", keys: ["legal", "law", "attorney", "paralegal", "compliance"] },
-        { name: "sales", keys: ["sales", "account executive", "business development"] },
-      ];
-
-      const lowerA = a.toLowerCase();
-      const lowerB = b.toLowerCase();
-
-      const domainA = domains.find((d) => d.keys.some((k) => lowerA.includes(k)))?.name;
-      const domainB = domains.find((d) => d.keys.some((k) => lowerB.includes(k)))?.name;
-
-      if (domainA && domainB) {
-        return domainA === domainB;
-      }
-
-      return cleanA.includes(cleanB) || cleanB.includes(cleanA);
-    }
-
-    if (targetIndustry && (!user.industry || !isSameIndustryDomain(user.industry, targetIndustry))) {
-      // Meaningful career direction change: Resolve or generate IndustryInsight for the new industry
+    // 7. Synchronize career industry & ensure matching IndustryInsight
+    if (targetIndustry) {
       let existingInsight = await db.industryInsight.findUnique({
         where: { industry: targetIndustry },
       });
@@ -202,6 +170,7 @@ Return only valid JSON.`,
     // Revalidate affected cache paths so Dashboard and Resume analysis reflect the update
     revalidatePath("/resume");
     revalidatePath("/dashboard");
+    revalidatePath("/");
 
     return {
       success: true,
