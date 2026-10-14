@@ -1,0 +1,42 @@
+.hero-options-page { padding-top: 4rem; }
+.hero-options-toolbar { position: relative; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem 2rem; padding: 1rem max(1.25rem, calc((100vw - 1200px) / 2)); border-bottom: 1px solid hsl(var(--border) / .7); background: hsl(var(--background)); }
+.hero-options-intro p { font-size: 1rem; font-weight: 700; }
+.hero-options-eyebrow { display: block; margin-bottom: .15rem; color: hsl(var(--muted-foreground)); font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.hero-options-switcher { display: flex; flex-wrap: wrap; gap: .45rem; }
+.hero-option-button { padding: .55rem .9rem; border: 1px solid hsl(var(--border)); border-radius: 999px; color: hsl(var(--muted-foreground)); background: hsl(var(--card) / .6); font-size: .78rem; font-weight: 650; transition: color .2s, border-color .2s, background .2s; }
+.hero-option-button:hover { color: hsl(var(--foreground)); border-color: hsl(var(--primary) / .55); }
+.hero-option-button.is-active { color: hsl(var(--primary)); border-color: hsl(var(--primary) / .5); background: hsl(var(--primary) / .1); }
+.hero-option-stage { position: relative; isolation: isolate; overflow: hidden; }
+.hero-option-stage > section { position: relative; z-index: 1; }
+.hero-option-art { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.hero-option-art::before, .hero-option-art::after { content: ""; position: absolute; inset: 0; }
+
+/* A dimensional, fading version of the current grid. */
+.hero-option-spotlight .hero-option-art { background: radial-gradient(ellipse 43% 28% at 50% 27%, rgba(49, 155, 239, .16), transparent 100%), radial-gradient(ellipse 37% 23% at 77% 62%, rgba(43, 189, 202, .09), transparent 100%); }
+.hero-option-spotlight .hero-option-art::before { background-image: linear-gradient(to right, hsl(var(--foreground) / .075) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--foreground) / .075) 1px, transparent 1px); background-size: 52px 52px; mask-image: radial-gradient(ellipse 65% 54% at 50% 32%, black, transparent 100%); }
+.hero-option-spotlight .hero-option-art::after { background: radial-gradient(ellipse 26% 13% at 50% 28%, rgba(82, 177, 251, .1), transparent); filter: blur(24px); }
+.dark .hero-option-spotlight .hero-option-art { background: radial-gradient(ellipse 43% 28% at 50% 27%, rgba(31, 113, 223, .21), transparent 100%), radial-gradient(ellipse 40% 25% at 75% 64%, rgba(4, 126, 151, .11), transparent 100%); }
+.dark .hero-option-spotlight .hero-option-art::before { background-image: linear-gradient(to right, rgba(134, 185, 229, .095) 1px, transparent 1px), linear-gradient(to bottom, rgba(134, 185, 229, .095) 1px, transparent 1px); }
+
+/* Quiet contour routes and waypoints around the copy. */
+.hero-option-path .hero-option-art { background: radial-gradient(ellipse 50% 34% at 50% 32%, hsl(var(--background)) 20%, transparent 100%), linear-gradient(145deg, rgba(69, 171, 239, .07), transparent 48%, rgba(24, 171, 184, .07)); }
+.hero-option-paths { position: absolute; width: 100%; height: 100%; inset: 0; fill: none; stroke: rgba(29, 129, 199, .23); stroke-width: 1.3; }
+.hero-option-paths path:nth-child(2) { stroke-dasharray: 3 8; opacity: .7; }
+.hero-option-paths path:nth-child(3) { opacity: .5; }
+.hero-option-paths circle { fill: hsl(var(--background)); stroke: rgba(25, 136, 216, .55); stroke-width: 2.5; }
+.dark .hero-option-paths { stroke: rgba(98, 179, 241, .27); }
+.dark .hero-option-paths circle { stroke: rgba(106, 190, 255, .7); }
+
+/* Broad diagonal shafts above a restrained dot texture. */
+.hero-option-beams .hero-option-art { background: radial-gradient(circle at 50% 28%, rgba(50, 151, 228, .1), transparent 41%); }
+.hero-option-beams .hero-option-art::before { background-image: radial-gradient(hsl(var(--foreground) / .16) .8px, transparent 1px); background-size: 23px 23px; mask-image: linear-gradient(90deg, black, transparent 35%, transparent 65%, black), linear-gradient(to bottom, black, transparent 80%); mask-composite: intersect; opacity: .6; }
+.hero-option-beams .hero-option-art::after { inset: -45% -20%; background: linear-gradient(106deg, transparent 27%, rgba(68, 166, 233, .07) 34%, transparent 41%, transparent 57%, rgba(50, 172, 200, .08) 63%, transparent 70%); transform: rotate(-8deg); }
+.dark .hero-option-beams .hero-option-art { background: radial-gradient(circle at 50% 28%, rgba(26, 109, 205, .14), transparent 43%); }
+.dark .hero-option-beams .hero-option-art::after { background: linear-gradient(106deg, transparent 27%, rgba(58, 137, 226, .12) 34%, transparent 41%, transparent 57%, rgba(34, 157, 192, .1) 63%, transparent 70%); }
+.hero-options-caption { display: flex; gap: .75rem; align-items: baseline; padding: 1.25rem max(1.25rem, calc((100vw - 1200px) / 2)); border-top: 1px solid hsl(var(--border) / .6); color: hsl(var(--muted-foreground)); font-size: .85rem; }
+.hero-options-caption strong { color: hsl(var(--foreground)); white-space: nowrap; }
+@media (max-width: 640px) { .hero-options-toolbar { padding-block: .85rem; } .hero-options-switcher { width: 100%; } .hero-option-button { flex: 1 1 auto; padding-inline: .55rem; font-size: .68rem; } .hero-options-caption { flex-direction: column; gap: .15rem; } }
+.hero-option-paths { top: -220px; height: 1050px; stroke: rgba(29, 129, 199, .32); }
+.dark .hero-option-paths { stroke: rgba(98, 179, 241, .38); }
+.hero-option-beams .hero-option-art::after { inset: 0; background: linear-gradient(118deg, transparent 7%, rgba(68, 166, 233, .15) 23%, transparent 40%, transparent 55%, rgba(50, 172, 200, .13) 73%, transparent 88%); transform: none; }
+.dark .hero-option-beams .hero-option-art::after { background: linear-gradient(118deg, transparent 7%, rgba(58, 137, 226, .22) 23%, transparent 40%, transparent 55%, rgba(34, 157, 192, .18) 73%, transparent 88%); }

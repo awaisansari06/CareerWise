@@ -1,5 +1,6 @@
 "use server";
 
+import { consumeAiBudget } from "@/lib/ai-budget";
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { generateAIInsights } from "@/lib/gemini";
@@ -51,6 +52,7 @@ export async function getIndustryInsights() {
     });
 
     if (!industryInsight || new Date(industryInsight.nextUpdate) < now || !hasValidInrSalaryData(industryInsight)) {
+      await consumeAiBudget(user.id);
       const referenceData = effectiveIndustry || user.resume;
       const insights = await generateAIInsights(referenceData);
       const generatedIndustry = effectiveIndustry || insights.industry;

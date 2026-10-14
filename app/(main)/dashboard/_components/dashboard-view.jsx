@@ -510,25 +510,25 @@ export default function DashboardView({ insights, initialResume }) {
         initial={shouldReduceMotion ? {} : "hidden"}
         animate="visible"
         variants={staggerContainerVariants}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-stretch"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4 items-stretch"
       >
         {/* Market Outlook (Featured Focal Metric) */}
         <motion.div variants={staggerItemVariants}>
-          <Card className={`transition-all duration-200 shadow-xs hover:shadow-md ${outlookConfig.cardBorder} h-full`}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <Card className={`transition-all duration-200 shadow-xs hover:shadow-md ${outlookConfig.cardBorder} h-full overflow-hidden`}>
+            <CardHeader className="flex flex-row items-center justify-between p-4 pb-2 sm:p-5 sm:pb-2">
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Market Outlook
               </span>
-              <div className={`p-2 rounded-lg bg-background/80 border border-border/60 ${outlookConfig.iconColor}`}>
+              <div className={`p-1.5 sm:p-2 rounded-lg bg-background/80 border border-border/60 ${outlookConfig.iconColor}`}>
                 <OutlookIcon className="h-4 w-4" />
               </div>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex items-baseline justify-between gap-2">
-                <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+            <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0 space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-1.5 min-w-0">
+                <span className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
                   {insights?.marketOutlook || "Neutral"}
                 </span>
-                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${outlookConfig.badgeClass}`}>
+                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border shrink-0 ${outlookConfig.badgeClass}`}>
                   Cycle
                 </span>
               </div>
@@ -541,17 +541,17 @@ export default function DashboardView({ insights, initialResume }) {
 
         {/* Industry Growth */}
         <motion.div variants={staggerItemVariants}>
-          <Card className="hover:border-primary/40 hover:shadow-card transition-all duration-200 h-full">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <Card className="hover:border-primary/40 hover:shadow-card transition-all duration-200 h-full overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between p-4 pb-2 sm:p-5 sm:pb-2">
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Industry Growth
               </span>
-              <div className="p-2 rounded-lg bg-background/80 border border-border/60 text-primary">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-background/80 border border-border/60 text-primary">
                 <TrendingUp className="h-4 w-4" />
               </div>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground font-mono">
+            <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0 space-y-2">
+              <div className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground font-mono">
                 {insights?.growthRate !== undefined ? `${insights.growthRate.toFixed(1)}%` : "0.0%"}
               </div>
               <Progress value={Math.min(insights?.growthRate || 0, 100)} className="h-1.5" />
@@ -564,21 +564,21 @@ export default function DashboardView({ insights, initialResume }) {
 
         {/* Demand Level */}
         <motion.div variants={staggerItemVariants}>
-          <Card className="hover:border-primary/40 hover:shadow-card transition-all duration-200 h-full">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <Card className="hover:border-primary/40 hover:shadow-card transition-all duration-200 h-full overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between p-4 pb-2 sm:p-5 sm:pb-2">
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Demand Level
               </span>
-              <div className={`p-2 rounded-lg bg-background/80 border border-border/60 ${demandConfig.colorClass}`}>
+              <div className={`p-1.5 sm:p-2 rounded-lg bg-background/80 border border-border/60 ${demandConfig.colorClass}`}>
                 <Zap className="h-4 w-4" />
               </div>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex items-baseline justify-between gap-2">
-                <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+            <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0 space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-1.5 min-w-0">
+                <span className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
                   {insights?.demandLevel || "Medium"}
                 </span>
-                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${demandConfig.badgeClass}`}>
+                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border shrink-0 ${demandConfig.badgeClass}`}>
                   Velocity
                 </span>
               </div>
@@ -596,28 +596,28 @@ export default function DashboardView({ insights, initialResume }) {
         </motion.div>
 
         {/* Active Job Openings */}
-        <motion.div variants={staggerItemVariants} className="sm:col-span-2 lg:col-span-1">
-          <Card className="hover:border-primary/40 hover:shadow-card transition-all duration-200 h-full">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <motion.div variants={staggerItemVariants}>
+          <Card className="hover:border-primary/40 hover:shadow-card transition-all duration-200 h-full overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between p-4 pb-2 sm:p-5 sm:pb-2">
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Job Openings
               </span>
-              <div className="p-2 rounded-lg bg-background/80 border border-border/60 text-primary">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-background/80 border border-border/60 text-primary">
                 <Briefcase className="h-4 w-4" />
               </div>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground font-mono">
+            <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0 space-y-2">
+              <div className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground font-mono">
                 {(insights?.jobOpenings || 0).toLocaleString("en-US")}
               </div>
-              <div className="flex items-center gap-1.5 text-xs">
+              <div className="flex flex-wrap items-center gap-1.5 text-xs">
                 {Number(insights?.jobOpeningsChange) >= 0 ? (
-                  <span className="inline-flex items-center text-emerald-600 dark:text-emerald-400 font-bold gap-0.5 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                  <span className="inline-flex items-center text-emerald-600 dark:text-emerald-400 font-bold gap-0.5 bg-emerald-500/10 px-1.5 py-0.5 rounded shrink-0">
                     <ArrowUpRight className="h-3.5 w-3.5" />
                     +{insights?.jobOpeningsChange}%
                   </span>
                 ) : (
-                  <span className="inline-flex items-center text-rose-600 dark:text-rose-400 font-bold gap-0.5 bg-rose-500/10 px-1.5 py-0.5 rounded">
+                  <span className="inline-flex items-center text-rose-600 dark:text-rose-400 font-bold gap-0.5 bg-rose-500/10 px-1.5 py-0.5 rounded shrink-0">
                     <ArrowDownRight className="h-3.5 w-3.5" />
                     {insights?.jobOpeningsChange}%
                   </span>
@@ -630,17 +630,17 @@ export default function DashboardView({ insights, initialResume }) {
 
         {/* Top In-Demand Skills */}
         <motion.div variants={staggerItemVariants} className="sm:col-span-2 lg:col-span-1">
-          <Card className="hover:border-primary/40 hover:shadow-card transition-all duration-200 h-full">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <Card className="hover:border-primary/40 hover:shadow-card transition-all duration-200 h-full overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between p-4 pb-2 sm:p-5 sm:pb-2">
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Top Industry Skills
               </span>
-              <div className="p-2 rounded-lg bg-background/80 border border-border/60 text-primary">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-background/80 border border-border/60 text-primary">
                 <Brain className="h-4 w-4" />
               </div>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+            <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0 space-y-2">
+              <div className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground whitespace-nowrap">
                 {insights?.topSkills?.length || 0} In-Demand
               </div>
               <div className="flex flex-wrap gap-1.5 pt-0.5">

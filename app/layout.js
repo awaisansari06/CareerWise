@@ -1,4 +1,4 @@
-import { Inter } from "next/font/google";
+
 import Link from "next/link";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -8,11 +8,7 @@ import { dark } from "@clerk/themes";
 import { Toaster } from "@/components/ui/sonner";
 import { BodyScrollFix } from "@/components/body-scroll-fix";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
+
 
 import { siteConfig } from "@/lib/site-config";
 
@@ -90,8 +86,8 @@ export default async function RootLayout({ children }) {
         },
       }}
     >
-      <html lang="en" suppressHydrationWarning className={inter.variable}>
-        <body className={`${inter.className} ${inter.variable} font-sans antialiased min-h-screen flex flex-col bg-background text-foreground selection:bg-primary/20`}>
+      <html lang="en" suppressHydrationWarning>
+        <body className={`font-sans antialiased min-h-screen flex flex-col bg-background text-foreground selection:bg-primary/20`}>
           <BodyScrollFix />
           <ThemeProvider
             attribute="class"

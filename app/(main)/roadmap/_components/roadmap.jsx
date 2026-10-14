@@ -1,5 +1,6 @@
 "use client";
 
+import { getSafeResourceUrl } from "@/lib/resource-url";
 import React, { useCallback, useState, useMemo, useEffect } from "react";
 import ReactFlow, {
   Controls,
@@ -291,7 +292,7 @@ export default function CareerRoadmap({ roadmap }) {
           index,
           label: node.data?.title || node.data?.label || `Milestone ${index + 1}`,
           description: node.data?.description || "",
-          link: node.data?.link || null,
+          link: getSafeResourceUrl(node.data?.link),
           level: node.data?.level || "Fundamentals",
         },
         position: { x: 0, y: 0 },

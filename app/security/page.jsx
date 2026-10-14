@@ -215,7 +215,7 @@ export default function SecurityArchitecturePage() {
               <span>Infrastructure and Database Protection</span>
             </h2>
             <p className="text-muted-foreground leading-relaxed text-xs md:text-sm">
-              Our PostgreSQL database is managed via secure cloud providers featuring encrypted connections at rest and in transit. Prisma client connection pooling safeguards serverless functions from exhausting connection quotas during peak concurrent loads.
+              CareerWise stores application data in PostgreSQL through Prisma. Production hosting must configure TLS connections, encryption at rest, backups, and a connection pool sized for the deployment. These infrastructure settings are managed by the hosting and database providers.
             </p>
           </MotionFadeUp>
 

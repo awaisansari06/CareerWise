@@ -1,6 +1,7 @@
 "use server";
 
 import { cache } from "react";
+import { consumeAiBudget } from "@/lib/ai-budget";
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
@@ -22,6 +23,7 @@ export async function updateUser(data) {
   }
 
   const targetIndustry = data.industry.trim();
+  if (targetIndustry.length > 120) throw new Error('Industry must be 120 characters or fewer');
 
   // 1. Check if industry insight already exists OUTSIDE the transaction with valid INR data
   let existingInsight = await db.industryInsight.findUnique({
@@ -35,6 +37,7 @@ export async function updateUser(data) {
   // 2. Perform external AI generation OUTSIDE the database transaction
   let newInsights = null;
   if (!existingInsight) {
+    await consumeAiBudget(user.id);
     try {
       newInsights = await generateAIInsights(targetIndustry);
     } catch (err) {

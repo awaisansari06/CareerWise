@@ -21,7 +21,7 @@ export default async function Header() {
     <header className="fixed top-0 w-full border-b border-border/80 bg-background/85 backdrop-blur-md z-50 transition-colors duration-200">
       <nav className="container mx-auto px-3 sm:px-4 h-16 flex items-center justify-between">
         {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+        <Link href="/" className="career-header-brand flex items-center gap-2.5 group shrink-0">
           <CareerWiseLogo
             className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 transition-transform group-hover:scale-105 duration-200"
           />
@@ -33,7 +33,7 @@ export default async function Header() {
         </Link>
 
         {/* Action Controls */}
-        <div className="flex items-center space-x-1.5 sm:space-x-3 shrink-0">
+        <div className="career-header-actions flex items-center space-x-1.5 sm:space-x-3 shrink-0">
           <SignedIn>
             <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex gap-2">
               <Link href="/dashboard">
@@ -120,12 +120,12 @@ export default async function Header() {
           </SignedIn>
 
           <SignedOut>
-            <SignInButton asChild>
+            <SignInButton>
               <Button variant="outline" size="sm" className="px-2.5 sm:px-3 text-xs sm:text-sm">
                 Sign In
               </Button>
             </SignInButton>
-            <SignUpButton asChild>
+            <SignUpButton>
               <Button variant="default" size="sm" className="px-2.5 sm:px-3 text-xs sm:text-sm">
                 Sign Up
               </Button>

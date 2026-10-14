@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   fadeUpVariants,
@@ -146,7 +146,7 @@ export default function ResumeAnalysis({ data }) {
   const strokeDashoffset = circumference - (overallScore / 100) * circumference;
 
   // Sections data
-  const sections = useMemo(() => [
+  const sections = [
     {
       key: "contact",
       title: "Contact Info",
@@ -191,7 +191,7 @@ export default function ResumeAnalysis({ data }) {
         data.sections?.skills?.comment || data.skillsComment
       ),
     },
-  ], [data]);
+  ];
 
   return (
     <div className="space-y-8 pb-12">
@@ -614,7 +614,7 @@ export default function ResumeAnalysis({ data }) {
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                <span>What's Working Well</span>
+                <span>What&apos;s Working Well</span>
               </CardTitle>
               <Badge variant="outline" className="text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
                 Strengths

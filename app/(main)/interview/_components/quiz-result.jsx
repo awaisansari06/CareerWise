@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
   Trophy,
   CheckCircle2,
@@ -38,7 +38,7 @@ export default function QuizResult({
   const correctCount = questions.filter((q) => q.isCorrect).length;
   const incorrectCount = totalQuestions - correctCount;
 
-  const evaluation = useMemo(() => {
+  const evaluation = (() => {
     if (score >= 80) {
       return {
         label: "Outstanding Proficiency",
@@ -65,7 +65,7 @@ export default function QuizResult({
       variant: "danger",
       description: "Focus on reviewing the detailed explanations below to strengthen key fundamentals before your next attempt.",
     };
-  }, [score]);
+  })();
 
   const toggleQuestion = (index) => {
     const next = new Set(expandedIndices);

@@ -1,3 +1,4 @@
+export const maxDuration = 60;
 import React from 'react'
 
 const MainLayout = ({ children }) => {

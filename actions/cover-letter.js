@@ -1,5 +1,6 @@
 "use server";
 
+import { consumeAiBudget } from "@/lib/ai-budget";
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import {
@@ -32,7 +33,7 @@ export async function generateCoverLetter(data) {
   if (!user) throw new Error("User not found");
   if (!user.resume) throw new Error("Resume not uploaded");
 
-  let resume = {};
+  await consumeAiBudget(user.id);
   try {
     resume = typeof user.resume.content === "string" ? JSON.parse(user.resume.content) : user.resume.content;
   } catch {

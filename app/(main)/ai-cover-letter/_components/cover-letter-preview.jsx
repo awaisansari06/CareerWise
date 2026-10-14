@@ -306,6 +306,7 @@ export default function CoverLetterPreview({ letter }) {
             >
               <MDEditor.Markdown
                 source={content}
+                skipHtml={true}
                 style={{
                   backgroundColor: "transparent",
                   color: isDark ? "hsl(var(--foreground))" : "#0f172a",
@@ -327,6 +328,7 @@ export default function CoverLetterPreview({ letter }) {
               onChange={(val) => setContent(val || "")}
               height={650}
               preview="edit"
+              previewOptions={{ skipHtml: true }}
               className="!border-none"
             />
           </div>

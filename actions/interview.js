@@ -1,5 +1,6 @@
 "use server";
 
+import { consumeAiBudget } from "@/lib/ai-budget";
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import {
@@ -27,7 +28,8 @@ export async function generateQuiz() {
 
   if (!user) throw new Error("User not found");
 
-  const resumeContent = user.resume?.content || "No resume available";
+  await consumeAiBudget(user.id);
+  const resumeContent = user.resume?.content || 'No resume available';
   const model = getGeminiModel();
 
   const prompt = `
@@ -166,7 +168,7 @@ export async function saveQuizResult(quizDataOrPayload, answersArg, _clientScore
     });
   }
 
-  if (!draft) {
+  if (!draft && !quizId) {
     // Fallback to active draft for this user if quizId was omitted
     draft = await db.assessment.findFirst({
       where: {
@@ -249,6 +251,7 @@ export async function saveQuizResult(quizDataOrPayload, answersArg, _clientScore
     `;
 
     try {
+      await consumeAiBudget(user.id);
       const model = getGeminiModel();
       const tipResult = await safeGenerateContent(model, improvementPrompt);
       improvementTip = tipResult.response.text().trim();
@@ -259,16 +262,19 @@ export async function saveQuizResult(quizDataOrPayload, answersArg, _clientScore
 
   try {
     // Transition draft to completed assessment with server-verified score
-    const completedAssessment = await db.assessment.update({
-      where: { id: draft.id },
-      data: {
-        quizScore: serverCalculatedScore,
-        questions: questionResults,
-        category: "Technical",
-        improvementTip,
-      },
+    const completedAssessment = await db.$transaction(async (tx) => {
+      const transition = await tx.assessment.updateMany({
+        where: { id: draft.id, userId: user.id, category: "draft" },
+        data: {
+          quizScore: serverCalculatedScore,
+          questions: questionResults,
+          category: "Technical",
+          improvementTip,
+        },
+      });
+      if (transition.count !== 1) throw new Error("This quiz has already been submitted.");
+      return tx.assessment.findUnique({ where: { id: draft.id } });
     });
-
     return completedAssessment;
   } catch (error) {
     console.error("Error saving quiz result:", error);
