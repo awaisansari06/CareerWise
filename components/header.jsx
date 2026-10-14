@@ -120,12 +120,12 @@ export default async function Header() {
           </SignedIn>
 
           <SignedOut>
-            <SignInButton>
+            <SignInButton asChild>
               <Button variant="outline" size="sm" className="px-2.5 sm:px-3 text-xs sm:text-sm">
                 Sign In
               </Button>
             </SignInButton>
-            <SignUpButton>
+            <SignUpButton asChild>
               <Button variant="default" size="sm" className="px-2.5 sm:px-3 text-xs sm:text-sm">
                 Sign Up
               </Button>
