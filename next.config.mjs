@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   devIndicators: false,
+  poweredByHeader: false,
   images: {
     remotePatterns: [
       {
@@ -11,7 +12,7 @@ const nextConfig = {
   },
   experimental: {
     serverActions: {
-      bodySizeLimit: '5mb',
+      bodySizeLimit: '6mb',
     },
   },
   async headers() {

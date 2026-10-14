@@ -149,7 +149,7 @@ export default function PrivacyPolicyPage() {
             <ul className="space-y-3 pl-2 text-muted-foreground">
               <li className="flex items-start gap-2.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary mt-2 shrink-0" />
-                <span><strong className="text-foreground">Google Gemini API:</strong> Extracted resume text, target role descriptions, and prompt instructions are transmitted via encrypted HTTPS to Google&apos;s Gemini API endpoints for inference.</span>
+                <span><strong className="text-foreground">Google Gemini API:</strong> Uploaded resume PDFs, extracted resume information, target role descriptions, and prompt instructions are transmitted via encrypted HTTPS to Google&apos;s Gemini API endpoints for inference.</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary mt-2 shrink-0" />
@@ -248,7 +248,7 @@ export default function PrivacyPolicyPage() {
               <span>Data Retention</span>
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              We retain your active profile, current resume, interview assessments, and generated cover letters for as long as your CareerWise account exists. Historical interview assessments and generated cover letters remain in your archive until you remove them or delete your account.
+              We retain your active profile, current resume, interview assessments, and generated cover letters for as long as your CareerWise account exists. Interview assessments remain associated with your account; generated cover letters can also be deleted individually. Deleting your Clerk account triggers removal of the associated CareerWise records through a verified account-deletion webhook.
             </p>
           </MotionFadeUp>
 

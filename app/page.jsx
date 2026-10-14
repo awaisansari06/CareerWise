@@ -78,9 +78,6 @@ export default function LandingPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* Fixed Theme Background Mesh Grid */}
-      <div className="grid-background" />
-
       {/* 1. Hero Section */}
       <HeroSection />
 

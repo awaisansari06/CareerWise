@@ -1,5 +1,6 @@
 "use server";
 
+import { consumeAiBudget } from "@/lib/ai-budget";
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import {
@@ -91,6 +92,7 @@ export async function getResumeAnalysis() {
   }
 
   // Otherwise, generate fresh
+  await consumeAiBudget(user.id);
   const analysis = await generateResumeAnalysis(user.resume.content);
 
   const analysisData = {

@@ -29,7 +29,7 @@
   <p align="center">
     <img src="https://img.shields.io/badge/Next.js-15.5-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js 15" />
     <img src="https://img.shields.io/badge/React-19.0-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React 19" />
-    <img src="https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+    <img src="https://img.shields.io/badge/Tailwind_CSS-4.3-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
     <img src="https://img.shields.io/badge/Google_Gemini-Flash_Lite-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Gemini AI" />
     <img src="https://img.shields.io/badge/Prisma_ORM-6.19-2D3748?style=for-the-badge&logo=prisma&logoColor=white" alt="Prisma" />
     <img src="https://img.shields.io/badge/PostgreSQL-Neon-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
@@ -147,7 +147,7 @@ CareerWise includes adaptive themes tailored for focused preparation in both dar
 ### Frontend & UI
 - **Framework:** [Next.js 15.5](https://nextjs.org/) (App Router, Turbopack, Server Actions)
 - **Core Library:** [React 19.0](https://react.dev/)
-- **Styling:** [Tailwind CSS 3.4](https://tailwindcss.com/) with `tailwindcss-animate`
+- **Styling:** [Tailwind CSS 4.3](https://tailwindcss.com/) with `tailwindcss-animate`
 - **Component Primitives:** [Shadcn UI](https://ui.shadcn.com/) built on [Radix UI](https://www.radix-ui.com/)
 - **Visualizations & Node Graphs:** [React Flow 11.11](https://reactflow.dev/) and [Dagre 0.8](https://github.com/dagrejs/dagre)
 - **Charts:** [Recharts 3.1](https://recharts.org/)
@@ -347,23 +347,17 @@ CareerWise implements defensive programming across authentication, data mutation
 
 ## 🧪 Testing
 
-The repository features an automated integration and unit test suite executed using Node.js's native test runner (`node --test`).
+The repository features an automated regression test suite executed using Node.js's native test runner (`node --test`).
 
 ```bash
 npm test
 ```
 
-### Verified Test Coverage (165 Tests across 27 Suites)
-- **AI Reliability & Schema Conformance:** JSON extraction, malformed recovery, safety delimiter checks, and schema validation.
-- **Data Integrity & Authorization Hardening:** Name formatting, ownership enforcement, cross-user isolation, and invalidation hooks.
-- **Interview Security & Anti-Tampering:** Client payload sanitization, server-side grading, and replay prevention.
-- **Resume Upload & Single-Resume Lifecycle:** File extension rejection, magic-byte validation, 5MB limit enforcement, upsert deduplication, and analysis invalidation.
-- **Resume Replacement & Dashboard Sync:** Cross-domain industry re-evaluation, personal skill synchronization, and cached insight reuse.
-- **Roadmap Generation Integrity:** Unique constraint conflict prevention and on-demand regeneration flows.
-- **Production Hardening & Reliability:** Environment variable validation, timeout boundaries, rate-limit retry logic, and security header checks.
-- **Salary Currency Standards:** Verification that salary formatting and data structures conform to Indian Rupee (INR) specifications.
+### Regression coverage
 
-> **Note:** These automated tests validate backend actions, security rules, AI sanitization, and data contracts. They do not substitute for browser-level end-to-end (E2E) automation.
+The committed tests cover PDF file validation, HTTPS resource URLs, quiz and roadmap schemas, malformed AI responses, AI timeouts and error sanitization, production configuration diagnostics, and account-deletion ownership/idempotency.
+
+These tests use controlled inputs and mocked services. They do not claim live database, authentication, or AI integration coverage. Follow the service verification steps in [docs/production.md](docs/production.md) before release.
 
 ---
 
@@ -424,7 +418,7 @@ CareerWise/
 │   ├── Banner-Dark.png         # Dark mode application banner preview
 │   ├── Banner-Light.png        # Light mode application banner preview
 │   └── favicon.svg             # Static favicon fallback
-├── 📁 tests/                   # Automated test suites (165 automated tests)
+├── 📁 tests/                   # Automated test suites (production regression tests)
 ├── .env.example                # Environment variable template
 ├── .gitignore                  # Git ignore rules
 ├── components.json             # Shadcn UI component configuration
@@ -441,7 +435,7 @@ CareerWise/
 ## 🚀 Getting Started
 
 ### Prerequisites
-- **Node.js:** v18.18+ or v20+ recommended
+- **Node.js:** v22.18+ (Node 22 or Node 24 LTS)
 - **Package Manager:** npm (bundled with Node.js)
 - **PostgreSQL Database:** A running PostgreSQL instance (e.g., [Neon](https://neon.tech), [Supabase](https://supabase.com), or local Postgres)
 - **API Keys:**
@@ -557,8 +551,8 @@ The project defines the following scripts in `package.json`:
 | `npm run build` | Runs `prisma generate` and compiles the Next.js application for production |
 | `npm run start` | Starts the production server using the built `.next` bundle |
 | `npm run lint` | Runs ESLint to inspect code quality and type safety |
-| `npm test` | Executes the complete automated test suite (165 tests across 27 suites) using Node's test runner |
-| `npm run fix` | ⚠️ **Development reset utility only:** Runs `prisma migrate reset` (drops data) and `prisma migrate dev`. **Do not run in production!** |
+| `npm test` | Executes the complete automated test suite (production regression tests) using Node's test runner |
+| `npm run db:deploy` | Applies committed database migrations without resetting data |
 
 ### Additional Tooling Commands
 
@@ -612,3 +606,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 <div align="center">
   <p>Built with <b>Next.js 15</b>, <b>React 19</b>, <b>Prisma</b>, <b>Tailwind CSS</b>, and <b>Google Gemini AI</b></p>
 </div>
+
+## Production release checks
+
+See [the production deployment guide](docs/production.md) for configuration, migration, startup, and service verification. `npm run preflight` reports missing production settings without printing secrets. Run `npm run db:deploy` only against the intended database; never reset a production database.

@@ -3,14 +3,13 @@
 import { v4 as uuidv4 } from "uuid";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { consumeAiBudget } from "@/lib/ai-budget";
 import { db } from "@/lib/prisma";
 import {
   getGeminiModel,
   safeGenerateContent,
   safeParseAiResponse,
   ResumeParserResponseSchema,
-  generateAIInsights,
-  classifyCareerIndustry,
 } from "@/lib/gemini";
 import { validateResumeFile } from "@/lib/resume-validator";
 import { hasValidInrSalaryData } from "@/lib/salary-utils";
@@ -37,6 +36,7 @@ export async function uploadResume(formData) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
+    await consumeAiBudget(user.id);
     const model = getGeminiModel();
 
     // 4. Invoke Gemini with verified PDF payload
@@ -92,36 +92,26 @@ Return only valid JSON.`,
     }
 
     // 5. Ensure industry is classified; infer from structured profile if not present
-    let targetIndustry = extractedData.industry?.trim();
-    if (!targetIndustry) {
-      targetIndustry = await classifyCareerIndustry(extractedData);
-      extractedData.industry = targetIndustry;
-    }
+    const targetIndustry = extractedData.industry?.trim() || 'General';
+    extractedData.industry = targetIndustry;
 
-    const fileUrl = "uploaded-file-url-here";
+    const fileUrl = null;
 
     // 6. Update/upsert resume and clean up stale analysis for data consistency
-    const resume = await db.resume.upsert({
-      where: { userId: user.id },
-      update: {
-        filename,
-        fileUrl,
-        content: JSON.stringify(extractedData, null, 2),
-      },
-      create: {
-        id: uuidv4(),
-        filename,
-        fileUrl,
-        content: JSON.stringify(extractedData, null, 2),
-        user: { connect: { id: user.id } },
-      },
+    const resume = await db.$transaction(async (tx) => {
+      const saved = await tx.resume.upsert({
+        where: { userId: user.id },
+        update: { filename, fileUrl, content: JSON.stringify(extractedData, null, 2) },
+        create: {
+          id: uuidv4(), filename, fileUrl,
+          content: JSON.stringify(extractedData, null, 2),
+          user: { connect: { id: user.id } },
+        },
+      });
+      await tx.resumeAnalysis.deleteMany({ where: { userId: user.id } });
+      await tx.roadmap.deleteMany({ where: { userId: user.id } });
+      return saved;
     });
-
-    // Invalidate old resume analysis so fresh analysis is generated for the new resume
-    await db.resumeAnalysis.deleteMany({
-      where: { userId: user.id },
-    });
-
     // 7. Synchronize career industry & ensure matching IndustryInsight
     if (targetIndustry) {
       let existingInsight = await db.industryInsight.findUnique({
@@ -130,33 +120,11 @@ Return only valid JSON.`,
 
       let insightToConnect = existingInsight && hasValidInrSalaryData(existingInsight) ? existingInsight : null;
 
-      if (!insightToConnect) {
-        try {
-          const newInsights = await generateAIInsights(targetIndustry);
-          insightToConnect = await db.industryInsight.upsert({
-            where: { industry: targetIndustry },
-            update: {
-              ...newInsights,
-              industry: targetIndustry,
-              nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-              lastUpdated: new Date(),
-            },
-            create: {
-              industry: targetIndustry,
-              ...newInsights,
-              nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-              lastUpdated: new Date(),
-            },
-          });
-        } catch (e) {
-          console.error("[Industry Insight on Resume Replacement Error]:", e.message);
-        }
-      }
-
+      // Insights are generated lazily by the dashboard, keeping uploads within one AI request.
       await db.user.update({
         where: { id: user.id },
         data: {
-          industry: targetIndustry,
+          ...(insightToConnect ? { industry: targetIndustry } : {}),
           isUploaded: true,
         },
       });

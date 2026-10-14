@@ -1,5 +1,7 @@
 "use server";
 
+import { getSafeResourceUrl } from "@/lib/resource-url";
+import { consumeAiBudget } from "@/lib/ai-budget";
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import {
@@ -83,6 +85,7 @@ export async function saveRoadMap({ forceRegenerate = false } = {}) {
     if (existing) return existing;
   }
 
+  await consumeAiBudget(user.id);
   const roadmap = await generateCareerRoadmap(user.resume.content);
   if (!roadmap) throw new Error("AI did not return valid roadmap JSON");
 
@@ -98,7 +101,7 @@ export async function saveRoadMap({ forceRegenerate = false } = {}) {
         data: {
           label: n.data?.title || n.data?.label || `Node ${i + 1}`,
           description: n.data?.description || "",
-          link: n.data?.link || null,
+          link: getSafeResourceUrl(n.data?.link),
           level: n.data?.level || "Fundamentals",
         },
         position: n.position || { x: i * 250, y: 100 },
@@ -109,7 +112,7 @@ export async function saveRoadMap({ forceRegenerate = false } = {}) {
         id: e.id?.toString() || `edge-${i}`,
         source: e.source?.toString(),
         target: e.target?.toString(),
-        type: e.type || "smoothstep",
+        type: "smoothstep",
         animated: e.animated ?? false,
       }))
       : [],

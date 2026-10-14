@@ -151,3 +151,11 @@ model IndustryInsight {
 
   @@index([industry])
 }
+// Durable fixed-window AI request budget shared by all application instances.
+model AiUsage {
+  id          String   @id
+  count       Int      @default(1)
+  windowStart DateTime
+
+  @@index([windowStart])
+}
