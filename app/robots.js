@@ -17,6 +17,8 @@ export default function robots() {
           "/interview/*",
           "/roadmap",
           "/roadmap/*",
+          "/career-paths",
+          "/career-paths/*",
           "/ai-cover-letter",
           "/ai-cover-letter/*",
           "/onboarding",

@@ -15,7 +15,7 @@ export const metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="relative min-h-screen py-16 sm:py-24">
+    <div className="cw-design cw-information-page relative min-h-screen py-16 sm:py-24">
       {/* Background Mesh Grid */}
       <div className="grid-background" />
 
@@ -129,7 +129,7 @@ export default function PrivacyPolicyPage() {
                 <span>Replacement & Invalidation Architecture:</span>
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                When you upload a new resume, CareerWise replaces your prior resume record in our database and permanently invalidates previous diagnostic analysis records. Only your most recently submitted resume and its corresponding analysis are preserved for active dashboard use.
+                When you upload a new resume, CareerWise replaces your prior resume record in our database and permanently invalidates previous diagnostic analysis records. Only your most recently submitted resume and its corresponding analysis are used for active dashboard guidance. Saved roadmaps and completed milestones are retained until you explicitly replace the plan. PDF bytes are stored privately as pending task input to support processing and retries, cleared on successful parsing, and scheduled for cleanup with failed tasks after 30 days. Background processing uses Inngest; signed events contain task identifiers, while execution checkpoints can include generated results.
               </p>
             </div>
             <p className="text-muted-foreground leading-relaxed text-xs md:text-sm">
@@ -153,7 +153,7 @@ export default function PrivacyPolicyPage() {
               </li>
               <li className="flex items-start gap-2.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary mt-2 shrink-0" />
-                <span><strong className="text-foreground">Zero Model Training on Personal Data:</strong> Under our enterprise API configuration with Google Cloud, user prompts and uploaded resume texts sent via the API are not utilized to train or fine-tune public base models.</span>
+                <span><strong className="text-foreground">Zero Model Training on Personal Data:</strong> Data handling by the AI provider depends on the API service, account tier, and settings configured by the operator. Review the provider terms before uploading sensitive information.</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary mt-2 shrink-0" />

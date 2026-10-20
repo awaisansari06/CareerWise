@@ -1,5 +1,5 @@
-import AppLayout from "@/components/AppLayout";
+import ToolWorkspace from "@/components/tool-workspace";
 
 export default function ResumeLayout({ children }) {
-  return <AppLayout>{children}</AppLayout>;
+  return <ToolWorkspace activeHref="/resume">{children}</ToolWorkspace>;
 }

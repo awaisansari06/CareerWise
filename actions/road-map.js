@@ -1,129 +1,29 @@
 "use server";
-
-import { getSafeResourceUrl } from "@/lib/resource-url";
-import { consumeAiBudget } from "@/lib/ai-budget";
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import {
-  getGeminiModel,
-  safeGenerateContent,
-  safeParseAiResponse,
-  RoadmapResponseSchema,
-  formatUntrustedData,
-  PROMPT_SAFETY_DIRECTIVE,
-} from "@/lib/gemini";
+import { revalidatePath } from "next/cache";
+import { queueForCurrentUser } from "@/lib/jobs/queue";
+export async function saveRoadMap(input={}){return queueForCurrentUser("ROADMAP",input);}
 
-async function generateCareerRoadmap(resumeJson) {
-  const model = getGeminiModel();
-
-  let resumeData = resumeJson;
-  if (typeof resumeJson === "string") {
-    try {
-      resumeData = JSON.parse(resumeJson);
-    } catch {
-      resumeData = resumeJson;
-    }
-  }
-
-  const prompt = `
-You are an expert career mentor and curriculum designer.
-
-${PROMPT_SAFETY_DIRECTIVE}
-
-Analyze the following resume reference data and infer the most likely career field/industry 
-(e.g., Software Development, Medicine, Civil Engineering, Teaching, Law, Business, etc.).
-
-UNTRUSTED RESUME REFERENCE DATA:
-${formatUntrustedData("resume_data", resumeData)}
-
-Now generate a career learning and growth roadmap SPECIFICALLY for this field.
-
-Guidelines:
-- First, identify the industry from the resume (doctor, teacher, civil engineer, web developer, etc.).
-- Then create a roadmap with 20–25 nodes that reflect realistic skills, milestones, or knowledge progression in that industry.
-- The roadmap must follow a progression: Fundamentals → Core → Advanced → Specialization.
-- Nodes format:
-  {id, type:"turbo", data:{title, description, link, level}}
-- Edges format:
-  {id, source, target, type:"smoothstep"}
-
-Output ONLY valid JSON with the following structure:
-{
-  "industry": "Inferred industry from resume",
-  "roadmapTitle": "Custom roadmap title",
-  "description": "Brief description of roadmap",
-  "duration": "Suggested time frame",
-  "initialNodes": [...],
-  "initialEdges": [...]
-}
-`;
-
-  try {
-    const result = await safeGenerateContent(model, prompt);
-    const text = result.response.text();
-    return safeParseAiResponse(text, RoadmapResponseSchema);
-  } catch (err) {
-    console.error("[Roadmap Generation Error]:", err.message);
-    throw new Error(err.message || "Failed to generate valid roadmap structure");
-  }
+export async function getRoadMap() {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+  const user = await db.user.findUnique({ where: { clerkUserId: userId }, select: { id: true } });
+  if (!user) throw new Error("User not found");
+  return db.roadmap.findUnique({ where: { userId: user.id } });
 }
 
-export async function saveRoadMap({ forceRegenerate = false } = {}) {
-  const { userId: clerkUserId } = await auth();
-  if (!clerkUserId) throw new Error("Unauthorized");
-
-  const user = await db.user.findUnique({
-    where: { clerkUserId },
-    include: { resume: true },
-  });
-  if (!user || !user.resume) throw new Error("User or resume not found");
-
-  if (!forceRegenerate) {
-    const existing = await db.roadmap.findUnique({
-      where: { userId: user.id },
-    });
-    if (existing) return existing;
-  }
-
-  await consumeAiBudget(user.id);
-  const roadmap = await generateCareerRoadmap(user.resume.content);
-  if (!roadmap) throw new Error("AI did not return valid roadmap JSON");
-
-  const safeRoadmap = {
-    roadmapTitle: roadmap.roadmapTitle || "Untitled Roadmap",
-    description: roadmap.description || "No description provided.",
-    duration: roadmap.duration || "Flexible",
-    industry: roadmap.industry || "General",
-    initialNodes: Array.isArray(roadmap.initialNodes)
-      ? roadmap.initialNodes.map((n, i) => ({
-        id: n.id?.toString() || `node-${i}`,
-        type: "default",
-        data: {
-          label: n.data?.title || n.data?.label || `Node ${i + 1}`,
-          description: n.data?.description || "",
-          link: getSafeResourceUrl(n.data?.link),
-          level: n.data?.level || "Fundamentals",
-        },
-        position: n.position || { x: i * 250, y: 100 },
-      }))
-      : [],
-    initialEdges: Array.isArray(roadmap.initialEdges)
-      ? roadmap.initialEdges.map((e, i) => ({
-        id: e.id?.toString() || `edge-${i}`,
-        source: e.source?.toString(),
-        target: e.target?.toString(),
-        type: "smoothstep",
-        animated: e.animated ?? false,
-      }))
-      : [],
-  };
-
-  return db.roadmap.upsert({
-    where: { userId: user.id },
-    update: safeRoadmap,
-    create: {
-      userId: user.id,
-      ...safeRoadmap,
-    },
-  });
+export async function setMilestoneCompletion({ roadmapId, nodeId, completed }) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+  if (typeof roadmapId !== "string" || typeof nodeId !== "string" || typeof completed !== "boolean") throw new Error("Invalid milestone update");
+  const user = await db.user.findUnique({ where: { clerkUserId: userId }, select: { id: true } });
+  if (!user) throw new Error("User not found");
+  const roadmap = await db.roadmap.findFirst({ where: { id: roadmapId, userId: user.id } });
+  if (!roadmap || !Array.isArray(roadmap.initialNodes) || !roadmap.initialNodes.some(node => node.id === nodeId)) throw new Error("Milestone not found");
+  const nodes = roadmap.initialNodes.map(node => node.id === nodeId ? { ...node, data: { ...node.data, completed } } : node);
+  const result = await db.roadmap.updateMany({ where: { id: roadmap.id, userId: user.id, updatedAt: roadmap.updatedAt }, data: { initialNodes: nodes } });
+  if (!result.count) throw new Error("The roadmap changed in another tab. Reload to see the latest progress.");
+  revalidatePath("/roadmap");
+  return db.roadmap.findUnique({ where: { id: roadmap.id } });
 }

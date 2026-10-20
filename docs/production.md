@@ -16,14 +16,14 @@ Run `npm run preflight` against the production environment. This validates confi
 4. Run `npm run build` with the public production Clerk key and application URL available at build time.
 5. Run `npm start` (or use your host's Next.js runtime). Startup refuses incomplete production configuration.
 6. Register `/api/webhooks/clerk` in Clerk for `user.deleted` events and verify signed delivery and retries. This removes application data when an account is deleted.
-7. Register `/api/inngest` with production Inngest. Its weekly task refreshes insights and removes expired AI budget records.
+7. Register `/api/inngest` with production Inngest. Verify `process-career-job`, `recover-career-jobs`, and `generate-industry-insights`. The recovery schedule delivers queued requests, handles timeouts and cleans old finished jobs; the weekly task refreshes insights and removes expired AI budgets. See [the durable-workflows release record](durable-workflows-release.md) for this release's database baseline and service verification steps.
 
 Do not build and run the development server against the same `.next` directory concurrently. On Windows, stop processes loading Prisma before generating its client; otherwise the query engine DLL can remain locked.
 
 ## Release checks requiring real services
 
 - Create a user through production Clerk; verify sign-in, sign-out, redirects, and unauthorized access to private routes.
-- Upload a valid PDF, reject an invalid/oversized upload, replace a resume, and confirm the analysis and roadmap refresh.
+- Upload a valid PDF, reject an invalid/oversized upload, replace a resume, and confirm the analysis refreshes while existing roadmap progress is preserved. Explicit plan replacement requires confirmation.
 - Generate a quiz; verify server scoring and that a stale quiz ID is rejected.
 - Generate, download, and delete a cover letter. Confirm another user cannot access it.
 - Generate a roadmap and verify its resource links. Only HTTPS links without embedded credentials are rendered.

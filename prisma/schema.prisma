@@ -25,6 +25,9 @@ model User {
   coverLetter   CoverLetter[]
   resumeAnalysis ResumeAnalysis?
   roadmaps         Roadmap[]
+  careerJobs CareerJob[]
+  resumeWorkspace ResumeWorkspace?
+  careerExploration CareerExploration?
 }
 
 model Assessment {
@@ -34,6 +37,8 @@ model Assessment {
   quizScore     Float     // Overall quiz score
   questions     Json[]    // Array of {question, answer, userAnswer, isCorrect}
   category      String    // "Technical", "Behavioral", etc.
+  selectedAnswers Json @default("[]")
+  progressVersion Int @default(0)
   improvementTip String?  // AI-generated improvement tip
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -158,4 +163,47 @@ model AiUsage {
   windowStart DateTime
 
   @@index([windowStart])
+}
+
+// A durable outbox and result envelope. Input never travels in Inngest events.
+model CareerJob {
+ id String @id @default(cuid())
+ userId String
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ kind String
+ status String @default("QUEUED")
+ activeKey String? @unique
+ input Json
+ result Json?
+ resumeVersion DateTime?
+ attempt Int @default(0)
+ error String?
+ dismissed Boolean @default(false)
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ startedAt DateTime?
+ completedAt DateTime?
+ @@index([userId,status,createdAt])
+ @@index([status,updatedAt])
+}
+model ResumeWorkspace {
+ id String @id @default(cuid())
+ userId String @unique
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ resumeVersion DateTime
+ draft String @db.Text
+ addressed Int[] @default([])
+ version Int @default(0)
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+}
+model CareerExploration {
+ id String @id @default(cuid())
+ userId String @unique
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ selectedRole String?
+ comparison String[] @default([])
+ version Int @default(0)
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
 }

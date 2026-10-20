@@ -1,4 +1,5 @@
 "use client";
+import { resolveCareerJob } from "@/lib/jobs/client";
 
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -53,7 +54,7 @@ export default function CoverLetterGenerator() {
     loading: generating,
     fn: generateLetterFn,
     data: generatedLetter,
-  } = useFetch(generateCoverLetter);
+  } = useFetch(async input=>resolveCareerJob(await generateCoverLetter(input)));
 
   // Redirect when letter is generated
   useEffect(() => {

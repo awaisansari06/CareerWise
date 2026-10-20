@@ -1,169 +1,56 @@
 "use client";
-
-import { useState } from "react";
+import { resolveCareerJob } from "@/lib/jobs/client";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, FileText, Loader2, Sparkles, CheckCircle2, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { uploadResume } from "@/actions/resume";
-import { toast } from "sonner";
-
+import { ArrowLeft, ArrowRight, Check, FileText, Sparkles, Upload } from "lucide-react";
+import { uploadResume, createCareerProfile } from "@/actions/resume";
+import { careerGoals, careerProfileSchema } from "@/lib/career-profile";
+import { CareerMountain } from "@/components/career-preview";
 export default function ResumeUpload() {
-  const [file, setFile] = useState(null);
-  const [isOpen, setIsOpen] = useState(true);
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
-
-  // Handle file selection with size limit
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    const MAX_SIZE_MB = 4;
-
-    if (selectedFile && selectedFile.size > MAX_SIZE_MB * 1024 * 1024) {
-      toast.error(`File too large! Max ${MAX_SIZE_MB}MB allowed.`);
-      return;
+  const [step, setStep] = useState(0);
+  const [mode, setMode] = useState("upload");
+  const [file, setFile] = useState(null);
+  const [goal, setGoal] = useState("explore");
+  const [profile, setProfile] = useState({ name: "", industry: "", skills: "", background: "" });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const lock = useRef(false);
+  const heading = useRef(null);
+  useEffect(() => { if (step > 0) heading.current?.focus(); }, [step]);
+  function chooseFile(candidate) {
+    setError("");
+    if (!candidate) return;
+    if (candidate.size > 5 * 1024 * 1024) { setError("Choose a PDF smaller than 5 MB."); return; }
+    if (!candidate.name.toLowerCase().endsWith(".pdf") || (candidate.type && candidate.type !== "application/pdf")) { setError("Please choose a PDF resume."); return; }
+    setFile(candidate);
+  }
+  function next(event) {
+    event.preventDefault(); setError("");
+    if (step === 0) {
+      if (mode === "upload" && !file) { setError("Choose your resume to continue."); return; }
+      if (mode === "manual") { const result = careerProfileSchema.safeParse({ ...profile, careerGoal: goal }); if (!result.success) { setError(result.error.issues[0].message); return; } }
     }
-
-    if (selectedFile && selectedFile.type !== "application/pdf") {
-      toast.error("Please upload a PDF file only.");
-      return;
-    }
-
-    setFile(selectedFile);
-  };
-
-  // Handle upload
-  const handleUpload = async () => {
-    if (!file) {
-      toast.warning("Please select a file first!");
-      return;
-    }
-
-    setLoading(true);
-
+    setStep(step + 1);
+  }
+  async function finish() {
+    if (lock.current) return;
+    lock.current = true; setBusy(true); setError("");
     try {
-      const formData = new FormData();
-      formData.append("resume", file);
-
-      let attempts = 0;
-      let result;
-
-      while (attempts < 3) {
-        attempts++;
-        result = await uploadResume(formData);
-
-        if (result.success) break;
-
-        if (result.error.includes("Too Many Requests")) {
-          toast.info(`Server busy, retrying... (${attempts}/3)`);
-          await new Promise((r) => setTimeout(r, attempts * 1000));
-          continue;
-        }
-
-        throw new Error(result.error);
-      }
-
-      if (!result?.success) throw new Error(result.error);
-
-      toast.success("Resume uploaded & analyzed successfully!");
-      setIsOpen(false);
-
-      // Redirect to dashboard
-      router.push("/dashboard");
-      router.refresh();
-    } catch (err) {
-      console.error(err);
-      toast.error(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-background/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
-      <div className="bg-card text-card-foreground border border-border/80 rounded-2xl shadow-2xl w-full max-w-md sm:max-w-lg p-6 sm:p-8 relative space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex p-2.5 rounded-xl bg-primary/10 text-primary mb-1">
-            <Sparkles className="h-6 w-6" />
-          </div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-            Complete Your Career Onboarding
-          </h2>
-          <p className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
-            Upload your existing resume to unlock personalized career insights, ATS scoring, and custom interview prep.
-          </p>
-        </div>
-
-        {/* Upload Dropzone */}
-        <label className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-8 cursor-pointer transition-all duration-200 text-center select-none ${
-          file
-            ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-            : "border-border/80 hover:border-primary/50 hover:bg-muted/30 bg-muted/10"
-        }`}>
-          {file ? (
-            <div className="flex flex-col items-center space-y-2">
-              <div className="h-12 w-12 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-                <CheckCircle2 className="h-6 w-6" />
-              </div>
-              <p className="text-sm font-semibold text-foreground break-all max-w-[280px]">
-                {file.name}
-              </p>
-              <Badge variant="neutral" className="text-[11px]">
-                {(file.size / (1024 * 1024)).toFixed(2)} MB • Ready to analyze
-              </Badge>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center space-y-2">
-              <div className="h-12 w-12 rounded-xl bg-muted text-muted-foreground flex items-center justify-center">
-                <FileText className="h-6 w-6" />
-              </div>
-              <p className="text-sm font-medium text-foreground">
-                Click to browse or drop your resume
-              </p>
-              <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                <span>PDF format</span>
-                <span>•</span>
-                <span>Max 4 MB</span>
-              </p>
-            </div>
-          )}
-
-          <input
-            type="file"
-            accept=".pdf"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-        </label>
-
-        {/* Action Button */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-          <p className="text-[11px] text-muted-foreground text-center sm:text-left">
-            Your document data is encrypted & processed securely
-          </p>
-          <Button
-            onClick={handleUpload}
-            disabled={!file || loading}
-            size="lg"
-            className="w-full sm:w-auto gap-2 px-6 shadow-xs font-medium"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin text-primary-foreground" />
-                <span>Analyzing Resume...</span>
-              </>
-            ) : (
-              <>
-                <Upload className="h-4 w-4" />
-                <span>Upload & Begin</span>
-              </>
-            )}
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
+      if (mode === "upload") {
+        const data = new FormData(); data.append("resume", file); data.append("careerGoal", goal);
+        const result = await resolveCareerJob(await uploadResume(data));
+        if (!result.success) throw new Error(result.error);
+      } else { await createCareerProfile({ ...profile, careerGoal: goal }); }
+      router.push("/dashboard"); router.refresh();
+    } catch (err) { setError(err.message || "Could not set up your profile. Please try again."); lock.current = false; setBusy(false); }
+  }
+  return <div className="cw-design cw-onboarding"><aside className="cw-onboarding-story"><p className="cw-eyebrow">Welcome to your next chapter</p><h1>A clearer direction.<br/>A stronger you.</h1><p>Start with your story. We’ll help you see the possibilities and take the next step.</p><CareerMountain/><div className="cw-onboarding-promise"><Sparkles size={20}/><div><h2>Built around your background</h2><p>Resume feedback, career exploration, interview practice, and a roadmap you can work through.</p></div></div></aside>
+    <section className="cw-onboarding-form"><nav className="cw-setup-steps" aria-label="Setup progress">{["Your background", "Your direction", "Ready to begin"].map((title, i) => <div key={title} aria-current={step === i ? "step" : undefined} className={step >= i ? "is-active" : ""}><span>{step > i ? <Check size={14}/> : i + 1}</span><small>{title}</small></div>)}</nav>
+    <p className="cw-eyebrow">Step {step + 1} of 3</p><h2 ref={heading} tabIndex={-1}>{["Let’s start with you.", "What’s your next chapter?", "You’re ready to move forward."][step]}</h2><p className="cw-panel-intro">{["Upload a resume, or tell us about your background. You can be just starting out.", "Choose the direction that feels right today. You can explore other paths as you go.", "We’ll use your background to personalize your workspace. Review AI suggestions before acting on them."][step]}</p>
+    {error && <p role="alert" className="cw-inline-error">{error}</p>}
+    {step === 0 && <form className="cw-form" onSubmit={next}><div className="cw-mode-switch"><button type="button" aria-pressed={mode === "upload"} onClick={() => { setMode("upload"); setError(""); }}>Upload resume</button><button type="button" aria-pressed={mode === "manual"} onClick={() => { setMode("manual"); setError(""); }}>Create a profile</button></div>{mode === "upload" ? <label className="cw-upload-zone" onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); chooseFile(e.dataTransfer.files[0]); }}><Upload size={30}/><strong>{file ? file.name : "Drop your resume here"}</strong><span>{file ? "Click to choose another PDF" : "or click to browse your files"}</span><small>PDF · Up to 5 MB</small><input className="sr-only" aria-label="Choose resume PDF" type="file" accept=".pdf,application/pdf" onChange={e => chooseFile(e.target.files[0])}/></label> : <>{[["name", "Your name", "e.g. Alex Shah"], ["industry", "Career field", "e.g. Marketing, education, healthcare"], ["skills", "Skills, separated by commas", "e.g. Research, communication, Excel"]].map(([key, title, placeholder]) => <div key={key}><label htmlFor={key}>{title}</label><input id={key} required maxLength={key === "skills" ? 2000 : key === "name" ? 150 : 120} value={profile[key]} placeholder={placeholder} onChange={e => setProfile({ ...profile, [key]: e.target.value })}/></div>)}<label htmlFor="background">Experience, studies, or projects</label><textarea id="background" required minLength={20} maxLength={10000} rows={5} value={profile.background} onChange={e => setProfile({ ...profile, background: e.target.value })} placeholder="Tell us what you’ve worked on, studied, or helped achieve."/></>}<button className="cw-button cw-button-primary">Continue <ArrowRight size={15}/></button></form>}
+    {step === 1 && <form onSubmit={next} className="cw-form"><fieldset className="cw-goal-options"><legend className="sr-only">Choose your career goal</legend>{careerGoals.map(option => <label key={option.id}><input type="radio" name="career-goal" value={option.id} checked={goal === option.id} onChange={() => setGoal(option.id)}/><span><strong>{option.title}</strong><small>{option.description}</small></span></label>)}</fieldset><div className="cw-draft-actions"><button type="button" className="cw-button cw-button-secondary" onClick={() => setStep(0)}><ArrowLeft size={14}/>Back</button><button className="cw-button cw-button-primary">Continue <ArrowRight size={15}/></button></div></form>}
+    {step === 2 && <><div className="cw-setup-review"><FileText size={24}/><div><small>Your background</small><strong>{mode === "upload" ? file?.name : profile.name}</strong><p>{mode === "upload" ? "Resume will be analyzed when you begin." : `${profile.industry} · Profile ready`}</p></div></div><div className="cw-setup-review"><Sparkles size={24}/><div><small>Your direction</small><strong>{careerGoals.find(option => option.id === goal)?.title}</strong></div></div><div className="cw-draft-actions"><button disabled={busy} className="cw-button cw-button-secondary" onClick={() => setStep(1)}><ArrowLeft size={14}/>Back</button><button disabled={busy} className="cw-button cw-button-primary" onClick={finish}>{busy ? mode === "upload" ? "Analyzing your resume…" : "Creating your profile…" : "Open my workspace"}<ArrowRight size={15}/></button></div><p className="cw-data-note">Your profile and extracted text are saved to your account. The PDF is held privately for processing and retry, then removed when parsing succeeds. Failed task payloads are scheduled for cleanup after 30 days.</p></>}
+    </section></div>;
 }

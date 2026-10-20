@@ -497,7 +497,7 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
 1. **Generate the Prisma client:**
    ```bash
-   npx prisma generate
+   npm run db:generate
    ```
 
 2. **Apply migrations (Development):**
@@ -539,6 +539,8 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+The development command uses the existing Prisma client. After changing `prisma/schema.prisma`, stop the development server with `Ctrl+C`, run `npm run db:generate`, then start it again. On Windows, generating the client while another CareerWise server or Prisma Studio is running can cause an `EPERM` error because the database engine file is in use. Close those processes before generating; administrator access is normally unnecessary.
+
 ---
 
 ## 📜 Scripts & Commands
@@ -547,7 +549,8 @@ The project defines the following scripts in `package.json`:
 
 | Command | Description |
 |---|---|
-| `npm run dev` | Runs `prisma generate` and starts the Next.js development server with Turbopack |
+| `npm run dev` | Starts the Next.js development server with Turbopack using the existing Prisma client |
+| `npm run db:generate` | Regenerates the Prisma client after setup or schema changes; stop running app servers first |
 | `npm run build` | Runs `prisma generate` and compiles the Next.js application for production |
 | `npm run start` | Starts the production server using the built `.next` bundle |
 | `npm run lint` | Runs ESLint to inspect code quality and type safety |
@@ -610,3 +613,9 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 ## Production release checks
 
 See [the production deployment guide](docs/production.md) for configuration, migration, startup, and service verification. `npm run preflight` reports missing production settings without printing secrets. Run `npm run db:deploy` only against the intended database; never reset a production database.
+
+## Durable career workflows
+
+See [the route/action audit](docs/product-audit.md) and [the migration and deployment runbook](docs/durable-workflows-release.md). Apply the additive workflow migration and connect Inngest before enabling the updated AI actions. Background tasks persist queued/running/completed/failed states and support retry after navigation or refresh. Resume drafts, review progress, saved career directions and interview answers now have account-owned storage.
+
+On Windows, Prisma generation stages the client separately and keeps an identical loaded engine DLL in place. If the engine version changes, stop app processes and rerun `npm run db:generate`; the script will not replace a different locked engine silently.

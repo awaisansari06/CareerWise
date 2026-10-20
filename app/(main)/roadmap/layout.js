@@ -1,5 +1,3 @@
-import AppLayout from "@/components/AppLayout";
-
-export default function ResumeLayout({ children }) {
-  return <AppLayout>{children}</AppLayout>;
-}
+import ToolWorkspace from "@/components/tool-workspace";
+export const maxDuration = 60;
+export default function RoadmapLayout({ children }) { return <ToolWorkspace activeHref="/roadmap">{children}</ToolWorkspace>; }

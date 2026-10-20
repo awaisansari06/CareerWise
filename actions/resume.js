@@ -1,160 +1,20 @@
 "use server";
-
 import { v4 as uuidv4 } from "uuid";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { consumeAiBudget } from "@/lib/ai-budget";
 import { db } from "@/lib/prisma";
-import {
-  getGeminiModel,
-  safeGenerateContent,
-  safeParseAiResponse,
-  ResumeParserResponseSchema,
-} from "@/lib/gemini";
 import { validateResumeFile } from "@/lib/resume-validator";
-import { hasValidInrSalaryData } from "@/lib/salary-utils";
-
-export async function uploadResume(formData) {
-  try {
-    // 1. Authenticate user
-    const { userId: clerkUserId } = await auth();
-    if (!clerkUserId) throw new Error("Unauthorized");
-
-    const user = await db.user.findUnique({ where: { clerkUserId } });
-    if (!user) throw new Error("User not found");
-
-    if (!formData || typeof formData.get !== "function") {
-      throw new Error("Invalid form submission");
-    }
-
-    const file = formData.get("resume");
-
-    // 2. Validate file (size, extension, MIME, magic bytes) BEFORE memory allocation or Gemini
-    const { filename } = await validateResumeFile(file);
-
-    // 3. Buffer validated file bytes for AI synthesis
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    await consumeAiBudget(user.id);
-    const model = getGeminiModel();
-
-    // 4. Invoke Gemini with verified PDF payload
-    const result = await safeGenerateContent(model, {
-      contents: [
-        {
-          role: "user",
-          parts: [
-            {
-              inlineData: {
-                mimeType: "application/pdf",
-                data: buffer.toString("base64"),
-              },
-            },
-            {
-              text: `You are a professional resume parser and career analyst.
-1. If not a resume → return {"error":"Not a resume"}.
-2. Extract the candidate's resume information and CLASSIFY their primary career industry/field based on their skills, experience, and education.
-You MUST provide the "industry" field in the output JSON (e.g., "Software Development", "Office Administration", "Business Administration", "Healthcare", "Finance & Accounting", "Marketing", "Education", etc.).
-JSON format:
-{
-  "name": "string",
-  "email": "string",
-  "phone": "string or empty string if not available",
-  "education": ["string"],
-  "experience": ["string"],
-  "skills": ["string"],
-  "projects": ["string"],
-  "languages": ["string"],
-  "hobbies": ["string"],
-  "industry": "string"
+import { parseResumeDocument } from "@/lib/resume-review";
+import { careerGoalSchema, careerProfileSchema, profileToResume } from "@/lib/career-profile";
+import { currentCareerUser, enqueueCareerJob } from "@/lib/jobs/queue";
+export async function uploadResume(formData){
+ const user=await currentCareerUser();
+ if(!formData || typeof formData.get!=="function")throw new Error("Invalid upload.");
+ const file=formData.get("resume"); const {filename}=await validateResumeFile(file);
+ const goal=formData.get("careerGoal")||"explore";
+ if(!careerGoalSchema.safeParse(goal).success)throw new Error("Choose a valid career goal.");
+ return enqueueCareerJob(user,"RESUME_PARSE",{filename,careerGoal:goal,pdf:Buffer.from(await file.arrayBuffer()).toString("base64")});
 }
-Return only valid JSON.`,
-            },
-          ],
-        },
-      ],
-      generationConfig: { responseMimeType: "application/json" },
-    });
-
-    const text = result.response.text();
-    const extractedData = safeParseAiResponse(text, ResumeParserResponseSchema);
-
-    if (extractedData.error) {
-      throw new Error("The uploaded file does not look like a professional resume");
-    }
-
-    // Normalize skills to strings if Gemini returns an array of skill objects
-    if (Array.isArray(extractedData.skills)) {
-      extractedData.skills = extractedData.skills.map((s) =>
-        typeof s === "string" ? s : s?.name || s?.skill || s?.title || JSON.stringify(s)
-      );
-    }
-
-    // 5. Ensure industry is classified; infer from structured profile if not present
-    const targetIndustry = extractedData.industry?.trim() || 'General';
-    extractedData.industry = targetIndustry;
-
-    const fileUrl = null;
-
-    // 6. Update/upsert resume and clean up stale analysis for data consistency
-    const resume = await db.$transaction(async (tx) => {
-      const saved = await tx.resume.upsert({
-        where: { userId: user.id },
-        update: { filename, fileUrl, content: JSON.stringify(extractedData, null, 2) },
-        create: {
-          id: uuidv4(), filename, fileUrl,
-          content: JSON.stringify(extractedData, null, 2),
-          user: { connect: { id: user.id } },
-        },
-      });
-      await tx.resumeAnalysis.deleteMany({ where: { userId: user.id } });
-      await tx.roadmap.deleteMany({ where: { userId: user.id } });
-      return saved;
-    });
-    // 7. Synchronize career industry & ensure matching IndustryInsight
-    if (targetIndustry) {
-      let existingInsight = await db.industryInsight.findUnique({
-        where: { industry: targetIndustry },
-      });
-
-      let insightToConnect = existingInsight && hasValidInrSalaryData(existingInsight) ? existingInsight : null;
-
-      // Insights are generated lazily by the dashboard, keeping uploads within one AI request.
-      await db.user.update({
-        where: { id: user.id },
-        data: {
-          ...(insightToConnect ? { industry: targetIndustry } : {}),
-          isUploaded: true,
-        },
-      });
-    } else {
-      await db.user.update({
-        where: { id: user.id },
-        data: { isUploaded: true },
-      });
-    }
-
-    // Revalidate affected cache paths so Dashboard and Resume analysis reflect the update
-    revalidatePath("/resume");
-    revalidatePath("/dashboard");
-    revalidatePath("/");
-
-    return {
-      success: true,
-      resume: {
-        id: resume.id,
-        filename: resume.filename,
-        skills: Array.isArray(extractedData.skills) ? extractedData.skills : [],
-        updatedAt: resume.updatedAt,
-      },
-    };
-  } catch (error) {
-    console.error("[Resume Upload Error]:", error.message);
-    return { success: false, error: error.message || "Upload failed" };
-  }
-}
-
 /**
  * Returns metadata and extracted personal skills for the authenticated user's current active resume.
  */
@@ -201,4 +61,36 @@ export async function getResume() {
     updatedAt: resume.updatedAt,
     createdAt: resume.createdAt,
   };
+}
+
+/** A private reconstructed document for the signed-in user's review workspace. */
+export async function getResumeDocument() {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+  const user = await db.user.findUnique({
+    where: { clerkUserId: userId },
+    select: { resume: { select: { id: true, filename: true, content: true, updatedAt: true } } },
+  });
+  if (!user) throw new Error("User not found");
+  if (!user.resume) return null;
+  const { content, ...metadata } = user.resume;
+  return { ...metadata, document: parseResumeDocument(content) };
+}
+
+export async function createCareerProfile(input) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+  const result = careerProfileSchema.safeParse(input);
+  if (!result.success) throw new Error(result.error.issues[0].message);
+  const user = await db.user.findUnique({ where: { clerkUserId: userId } });
+  if (!user) throw new Error("User not found");
+  const content = JSON.stringify(profileToResume(result.data, user.email), null, 2);
+  await db.$transaction(async tx => {
+    await tx.resume.upsert({ where: { userId: user.id }, update: { filename: "Career profile", content, fileUrl: null }, create: { id: uuidv4(), userId: user.id, filename: "Career profile", content, fileUrl: null } });
+    await tx.resumeAnalysis.deleteMany({ where: { userId: user.id } });
+    await tx.resumeWorkspace.deleteMany({ where: { userId: user.id } });
+    await tx.user.update({ where: { id: user.id }, data: { isUploaded: true, industry: null } });
+  }, { isolationLevel: "Serializable" });
+  for (const path of ["/dashboard", "/resume", "/interview", "/roadmap", "/career-paths"]) revalidatePath(path);
+  return { success: true };
 }

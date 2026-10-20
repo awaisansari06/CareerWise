@@ -1,5 +1,3 @@
-import AppLayout from "@/components/AppLayout";
-
 export default function DashboardLayout({ children }) {
-  return <AppLayout>{children}</AppLayout>;
+  return <div className="cw-dashboard-layout">{children}</div>;
 }
