@@ -1,7 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 80" fill="none">
-  <style>.blue{fill:#0076D0}.slate{fill:#64748B}@media(prefers-color-scheme:dark){.blue{fill:#4DB8FF}.slate{fill:#94A3B8}}</style>
-  <path class="slate" d="M28 58 42 34Q44 30 48 30H55Q58 30 60 34L69 50 59 68 49 49 39 68Z"/>
-  <path class="blue" d="M5 30H18Q21 30 23 34L38 62 29 76H25Q21 76 19 72Z"/>
-  <path class="blue" d="M49 49 59 68 79 21H94L72 73Q70 76 66 76H59Q55 76 53 72L40 49Z"/>
-  <path class="slate" d="M86 2 97 19 86 14 75 19Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+<style>.tile{fill:#eef0f7;stroke:#dddeda}.mark{stroke:#3459b7}@media(prefers-color-scheme:dark){.tile{fill:#292c27;stroke:#393d36}.mark{stroke:#a7baf1}}</style>
+<rect class="tile" x="1" y="1" width="46" height="46" rx="13"/>
+<g class="mark" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15 16.5 33 24 20 31.5 33 38 14"/><path d="M31 14h7v7"/></g>
 </svg>

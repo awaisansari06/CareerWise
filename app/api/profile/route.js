@@ -1,14 +1,3 @@
-import { NextResponse } from "next/server";
-
-/**
- * Handles automated profile probe requests (e.g. from browser extensions,
- * job assistants, or lingering localhost service workers) to prevent
- * noisy 404 log spam in the Next.js terminal.
- */
-export async function GET() {
-  return NextResponse.json({ ok: true, status: "active" }, { status: 200 });
-}
-
-export async function POST() {
-  return NextResponse.json({ ok: true, status: "active" }, { status: 200 });
-}
+import { auth } from "@clerk/nextjs/server";
+export async function GET(){const {userId}=await auth();if(!userId)return Response.json({error:"Unauthorized"},{status:401});return Response.json({ok:true,status:"active"});}
+export async function POST(){return Response.json({error:"Profile updates use the authenticated workspace actions."},{status:405,headers:{Allow:"GET"}});}

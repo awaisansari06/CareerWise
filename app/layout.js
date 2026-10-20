@@ -1,10 +1,12 @@
 
 import Link from "next/link";
 import "./globals.css";
+import "./careerwise-redesign.css";
+import "./careerwise-tools.css";
+import "./careerwise-system.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import Header from "@/components/header";
 import { ClerkProvider } from "@clerk/nextjs";
-import { dark } from "@clerk/themes";
 import { Toaster } from "@/components/ui/sonner";
 import { BodyScrollFix } from "@/components/body-scroll-fix";
 
@@ -80,9 +82,8 @@ export default async function RootLayout({ children }) {
     <ClerkProvider
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
       appearance={{
-        baseTheme: dark,
         variables: {
-          colorPrimary: "#0ea5e9",
+          colorPrimary: "#325bea",
         },
       }}
     >
@@ -91,18 +92,19 @@ export default async function RootLayout({ children }) {
           <BodyScrollFix />
           <ThemeProvider
             attribute="class"
-            defaultTheme="dark"
+            defaultTheme="light"
             enableSystem={true}
             disableTransitionOnChange={false}
           >
+            <a href="#main-content" className="cw-skip-link">Skip to main content</a>
             {/* Header */}
             <Header />
 
-            <main className="flex-1 w-full">{children}</main>
+            <main id="main-content" tabIndex={-1} className="flex-1 w-full">{children}</main>
             <Toaster richColors />
 
             {/* Footer */}
-            <footer className="border-t border-border/80 bg-card/30 backdrop-blur-sm mt-auto">
+            <footer className="cw-design cw-site-footer border-t border-border/80 mt-auto">
               <div className="container mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs md:text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />

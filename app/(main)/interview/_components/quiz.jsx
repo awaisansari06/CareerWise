@@ -1,392 +1,122 @@
 "use client";
+import { resolveCareerJob } from "@/lib/jobs/client";
 
-import React, { useState, useEffect } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight, BookOpen, Check, CheckCircle2, Clock3, FileQuestion, Lightbulb, Loader2, Pause, Play, ShieldCheck, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+import { savePracticeProgress } from "@/actions/workspace-state";
 import { generateQuiz, saveQuizResult } from "@/actions/interview";
+import { isPracticeComplete } from "@/lib/interview-state";
 import QuizResult from "./quiz-result";
-import useFetch from "@/hooks/use-fetch";
-import { motion, useReducedMotion } from "framer-motion";
-import {
-  Sparkles,
-  Loader2,
-  Clock,
-  HelpCircle,
-  Brain,
-  CheckCircle2,
-  Lightbulb,
-  ArrowRight,
-  ArrowLeft,
-  ShieldCheck,
-  Target,
-  Zap,
-} from "lucide-react";
 
-export default function Quiz() {
-  const shouldReduceMotion = useReducedMotion();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState([]);
+export function PreparationCues({ industry }) {
+  return (
+    <aside className="cw-preparation-cues" aria-label="Preparation cues">
+      <section className="cw-panel"><span className="cw-icon-tile"><BookOpen size={21} /></span><h2>A little structure helps.</h2><ol><li><span>01</span><div><strong>Notice the context</strong><p>Look for the goal, constraints, and people involved.</p></div></li><li><span>02</span><div><strong>Weigh the options</strong><p>Compare the approaches before choosing your answer.</p></div></li><li><span>03</span><div><strong>Learn from the explanation</strong><p>After submitting, review why each answer fits.</p></div></li></ol></section>
+      <section className="cw-cue-note"><Lightbulb size={20} /><div><h3>Practice with perspective</h3><p>{industry ? `Your ${industry} background helps shape this session.` : "Your uploaded resume helps shape this session."} Questions are AI-generated, so use the explanations as a starting point for further learning.</p></div></section>
+      <section className="cw-cue-note"><ShieldCheck size={20} /><div><h3>Your own space to prepare</h3><p>Completed sessions are saved to your CareerWise account so you can revisit your answers and feedback.</p></div></section>
+    </aside>
+  );
+}
 
-  const {
-    loading: generatingQuiz,
-    fn: generateQuizFn,
-    data: quizData,
-  } = useFetch(generateQuiz);
-
-  const {
-    loading: savingResult,
-    fn: saveQuizResultFn,
-    data: resultData,
-    setData: setResultData,
-  } = useFetch(saveQuizResult);
-
-  // Normalize questions array and extract quizId
-  const questions = quizData?.questions || (Array.isArray(quizData) ? quizData : []);
-  const quizId = quizData?.quizId;
+export function PracticeQuestion({ questions, answers, currentQuestion, onAnswer, onNavigate, onSubmit, submitting = false, error, industry }) {
+  const [paused, setPaused] = useState(false);
+  const questionHeading = useRef(null);
+  const questionPanel = useRef(null);
+  const answerGroupId = useId();
+  const question = questions[currentQuestion];
+  const answeredCount = questions.filter((item, index) => item.options.includes(answers[index])).length;
+  const lastQuestion = currentQuestion === questions.length - 1;
+  const complete = isPracticeComplete(questions, answers);
 
   useEffect(() => {
-    if (quizData) {
-      const qList = quizData?.questions || (Array.isArray(quizData) ? quizData : []);
-      setAnswers(new Array(qList.length).fill(null));
-      setCurrentQuestion(0);
-    }
-  }, [quizData]);
+    if (paused) return;
+    questionHeading.current?.focus({ preventScroll: true });
+    questionPanel.current?.scrollIntoView({ block: "start" });
+  }, [currentQuestion, paused]);
 
-  const handleAnswer = (answer) => {
-    const newAnswers = [...answers];
-    newAnswers[currentQuestion] = answer;
-    setAnswers(newAnswers);
-  };
-
-  const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
-    } else {
-      finishQuiz();
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion((prev) => prev - 1);
-    }
-  };
-
-  const finishQuiz = async () => {
-    try {
-      // Score calculation is performed exclusively on the server
-      await saveQuizResultFn({ quizId, answers });
-      toast.success("Mock interview completed and saved!");
-    } catch (error) {
-      toast.error(error.message || "Failed to save quiz results");
-    }
-  };
-
-  const startNewQuiz = () => {
-    setCurrentQuestion(0);
-    setAnswers([]);
-    setResultData(null);
-    generateQuizFn();
-  };
-
-  // 1. AI Question Generation Loading State
-  if (generatingQuiz) {
-    return (
-      <Card className="border-border/80 bg-card/70 backdrop-blur-sm p-8 sm:p-12 text-center">
-        <div className="flex flex-col items-center justify-center space-y-4 max-w-md mx-auto">
-          <div className="relative">
-            <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-              <Brain className="h-8 w-8 animate-pulse" />
-            </div>
-            <span className="absolute -top-1 -right-1 flex h-4 w-4">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-4 w-4 bg-primary"></span>
-            </span>
-          </div>
-
-          <div className="space-y-1.5">
-            <h3 className="text-xl font-bold text-foreground">
-              Synthesizing Interview Rubric
-            </h3>
-            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              CareerWise is evaluating your resume background to generate 10 tailored technical, conceptual, and situational interview questions.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2">
-            <Loader2 className="h-4 w-4 animate-spin text-primary" />
-            <span>Formulating role-targeted questions...</span>
-          </div>
-        </div>
-      </Card>
-    );
-  }
-
-  // 2. Results Screen
-  if (resultData) {
-    return (
-      <div className="w-full">
-        <QuizResult result={resultData} onStartNew={startNewQuiz} />
-      </div>
-    );
-  }
-
-  // 3. Mock Interview Readiness / Briefing Card (Empty State before starting)
-  if (!quizData || questions.length === 0) {
-    return (
-      <Card className="border-border/80 bg-card/70 backdrop-blur-sm overflow-hidden shadow-lg">
-        <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border/60 p-6 sm:p-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
-                <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-                <span>AI Proctor Assessment</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-                Interview Readiness Briefing
-              </h2>
-              <p className="text-xs sm:text-sm text-muted-foreground max-w-xl leading-relaxed">
-                Simulate a real-world technical and situational interview tailored directly to your resume background and career discipline.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <CardContent className="p-6 sm:p-8 space-y-6">
-          {/* Key Specifications Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-            <div className="rounded-xl border border-border/70 bg-card p-3.5 sm:p-4 space-y-1 shadow-2xs">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-                <HelpCircle className="h-3.5 w-3.5 text-primary" />
-                <span>Questions</span>
-              </div>
-              <p className="text-lg sm:text-xl font-bold text-foreground font-mono">10 Items</p>
-              <p className="text-[11px] text-muted-foreground">Multiple Choice</p>
-            </div>
-
-            <div className="rounded-xl border border-border/70 bg-card p-3.5 sm:p-4 space-y-1 shadow-2xs">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-                <Clock className="h-3.5 w-3.5 text-indigo-500" />
-                <span>Duration</span>
-              </div>
-              <p className="text-lg sm:text-xl font-bold text-foreground font-mono">~15 Mins</p>
-              <p className="text-[11px] text-muted-foreground">Self-paced</p>
-            </div>
-
-            <div className="rounded-xl border border-border/70 bg-card p-3.5 sm:p-4 space-y-1 shadow-2xs">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-                <Target className="h-3.5 w-3.5 text-amber-500" />
-                <span>Target Level</span>
-              </div>
-              <p className="text-lg sm:text-xl font-bold text-foreground">Adaptive</p>
-              <p className="text-[11px] text-muted-foreground">Resume Aligned</p>
-            </div>
-
-            <div className="rounded-xl border border-border/70 bg-card p-3.5 sm:p-4 space-y-1 shadow-2xs">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                <span>Feedback</span>
-              </div>
-              <p className="text-lg sm:text-xl font-bold text-foreground">Instant</p>
-              <p className="text-[11px] text-muted-foreground">AI Tip Rubric</p>
-            </div>
-          </div>
-
-          {/* Assessment Scope */}
-          <div className="rounded-xl border border-border/60 bg-muted/20 p-4 sm:p-5 space-y-3">
-            <h4 className="text-xs sm:text-sm font-bold text-foreground uppercase tracking-wider">
-              What This Assessment Evaluates
-            </h4>
-            <div className="grid sm:grid-cols-2 gap-2.5 text-xs sm:text-sm text-muted-foreground">
-              <div className="flex items-start gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-                <span>Technical tools, domain frameworks & specialized knowledge</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-                <span>Real-world workplace problem-solving & situational judgment</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-                <span>Theoretical fundamentals derived from academic background</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-                <span>Communication precision and ethical industry best practices</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Guidelines Banner */}
-          <div className="flex items-start gap-3 text-xs text-muted-foreground bg-primary/5 rounded-xl p-4 border border-primary/20">
-            <Zap className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-            <p className="leading-relaxed">
-              Answer each question to the best of your ability. Comprehensive AI evaluation, correct answers, and actionable coaching tips are provided upon submitting your completed assessment.
-            </p>
-          </div>
-        </CardContent>
-
-        {/* Prominent Start CTA Footer */}
-        <CardFooter className="p-6 sm:p-8 pt-0 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border/60 bg-card/40">
-          <p className="text-xs text-muted-foreground text-center sm:text-left">
-            Your results will be permanently recorded in your performance trajectory
-          </p>
-          <Button
-            size="lg"
-            onClick={generateQuizFn}
-            className="w-full sm:w-auto gap-2 px-8 py-6 text-base font-bold shadow-lg hover:shadow-xl transition-all"
-          >
-            <Sparkles className="h-4 w-4 text-amber-400" />
-            <span>Start Mock Interview</span>
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        </CardFooter>
-      </Card>
-    );
-  }
-
-  // 4. In-Quiz Question Interface
-  const question = questions[currentQuestion];
-  const isLastQuestion = currentQuestion === questions.length - 1;
-  const progressPercent = Math.round(((currentQuestion + 1) / questions.length) * 100);
-  const selectedAnswer = answers[currentQuestion];
-  const optionLetters = ["A", "B", "C", "D"];
-  const remainingCount = questions.length - (currentQuestion + 1);
-
+  if (!question) return null;
   return (
-    <Card className="border-border/80 bg-card/70 backdrop-blur-sm overflow-hidden shadow-xl">
-      {/* Quiz Progress Header */}
-      <div className="p-4 sm:p-6 border-b border-border/60 bg-card/50 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Badge variant="neutral" className="text-xs font-bold px-3 py-1">
-              Question {currentQuestion + 1} of {questions.length}
-            </Badge>
-            <span className="text-xs text-muted-foreground hidden sm:inline">
-              • {remainingCount > 0 ? `${remainingCount} remaining` : "Final question"}
-            </span>
-          </div>
-          <span className="text-xs font-mono font-bold text-muted-foreground">
-            {progressPercent}% completed
-          </span>
-        </div>
-        <Progress value={progressPercent} className="h-2 w-full" />
-      </div>
+    <div className="cw-practice-session-grid">
+      <section ref={questionPanel} className="cw-panel cw-active-question" aria-label="Current practice question">
+        <div className="cw-question-top"><span className="cw-mini-label">QUESTION {currentQuestion + 1} OF {questions.length}</span><span><Clock3 size={14} />Self-paced</span></div>
+        <progress className="cw-question-progress" value={answeredCount} max={questions.length} aria-label={`${answeredCount} of ${questions.length} questions answered`} />
+        <div className="cw-question-progress-label"><span>{answeredCount} of {questions.length} answered</span><button type="button" className="cw-text-link" disabled={submitting} onClick={() => setPaused(!paused)}>{paused ? <Play size={13} /> : <Pause size={13} />}{paused ? "Resume" : "Take a pause"}</button></div>
+        {paused ? <div className="cw-question-paused"><Pause size={32} /><h2>Take a breath. You’ve got time.</h2><p>Your selected answers are still here. Resume when you’re ready.</p><button type="button" className="cw-button" onClick={() => setPaused(false)}><Play size={15} />Resume practice</button></div> : <>
+          <h2 ref={questionHeading} tabIndex={-1} id={`${answerGroupId}-question`} className="cw-question-title">{question.question}</h2>
+          <p className="cw-question-hint">Choose the approach you think fits best.</p>
+          <fieldset className="cw-question-options" disabled={submitting} aria-labelledby={`${answerGroupId}-question`}><legend className="sr-only">Choose one answer</legend>{question.options.map((option, index) => <label key={index} className={answers[currentQuestion] === option ? "is-selected" : ""}><input type="radio" name={`${answerGroupId}-${currentQuestion}`} value={option} checked={answers[currentQuestion] === option} onChange={() => onAnswer(option)} /><span className="cw-option-letter" aria-hidden="true">{String.fromCharCode(65 + index)}</span><span>{option}</span><span className="cw-option-check" aria-hidden="true">{answers[currentQuestion] === option && <Check size={12} />}</span></label>)}</fieldset>
+        </>}
+        {error && <div className="cw-inline-error" role="alert"><strong>Your answers are still here.</strong><p>{error}</p></div>}
+        <div className="cw-question-navigation"><button type="button" className="cw-button cw-button-secondary" disabled={currentQuestion === 0 || submitting || paused} onClick={() => onNavigate(currentQuestion - 1)}><ArrowLeft size={15} />Previous</button>{lastQuestion ? <button type="button" className="cw-button" disabled={!complete || submitting || paused} onClick={onSubmit}>{submitting ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}{submitting ? "Saving…" : "Finish and see feedback"}</button> : <button type="button" className="cw-button" disabled={!answers[currentQuestion] || submitting || paused} onClick={() => onNavigate(currentQuestion + 1)}>Next question <ArrowRight size={15} /></button>}</div>
+        {lastQuestion && !complete && <p className="cw-question-save-note">Answer every question before submitting. Use the question numbers below to revisit one.</p>}
+        <nav className="cw-question-map" aria-label="Jump to a practice question">{questions.map((item, index) => <button type="button" key={item.id || index} disabled={submitting || paused} className={item.options.includes(answers[index]) ? "is-answered" : ""} aria-current={index === currentQuestion ? "step" : undefined} aria-label={`Question ${index + 1}${item.options.includes(answers[index]) ? ", answered" : ", unanswered"}`} onClick={() => onNavigate(index)}>{index + 1}</button>)}</nav>
+        <p className="cw-question-save-note">Answers save to your account after each selection. Refresh to resume your saved session. If saving fails, select the answer again to retry.</p>
+      </section>
+      <PreparationCues industry={industry} />
+    </div>
+  );
+}
 
-      <CardContent className="p-5 sm:p-8">
-        <motion.div
-          key={currentQuestion}
-          initial={shouldReduceMotion ? {} : { opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, ease: "easeOut" }}
-          className="space-y-6"
-        >
-          {/* Question Text */}
-          <div className="space-y-2">
-            <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-foreground leading-snug">
-              {question?.question}
-            </h2>
-          </div>
+export default function Quiz({ industry, initialPractice }) {
+  const [phase, setPhase] = useState(initialPractice ? "active" : "ready");
+  const [quiz, setQuiz] = useState(initialPractice || null);
+  const [currentQuestion, setCurrentQuestion] = useState(()=>{if(!initialPractice)return 0;const next=initialPractice.questions.findIndex((_,i)=>!initialPractice.answers?.[i]);return next<0?Math.max(0,initialPractice.questions.length-1):next;});
+  const [answers, setAnswers] = useState(initialPractice?.questions.map((_,i)=>initialPractice.answers?.[i]||null) || []);
+  const [answerSaving,setAnswerSaving]=useState(false);
+  const progressVersion=useRef(initialPractice?.progressVersion||0);
+  async function answerQuestion(answer){if(answerSaving||requestActive.current)return;const next=answers.map((value,index)=>index===currentQuestion?answer:value);setAnswers(next);setAnswerSaving(true);setError("");try{const saved=await savePracticeProgress({quizId:quiz.quizId,answers:next,version:progressVersion.current});progressVersion.current=saved.version;}catch(err){setAnswers(answers);setError(err.message||"Could not save this answer. Select it again to retry.");}finally{setAnswerSaving(false);}}
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState("");
+  const requestActive = useRef(false);
+  const generationRequest=useRef(null);
 
-          {/* Answers List */}
-          <RadioGroup
-            value={selectedAnswer || ""}
-            onValueChange={handleAnswer}
-            className="space-y-3"
-          >
-            {question?.options?.map((option, index) => {
-              const isSelected = selectedAnswer === option;
-              const letter = optionLetters[index] || `${index + 1}`;
+  useEffect(() => {
+    if (!answerSaving && phase !== "submitting") return;
+    const warnBeforeLeaving = (event) => { event.preventDefault(); event.returnValue = ""; };
+    window.addEventListener("beforeunload", warnBeforeLeaving);
+    return () => window.removeEventListener("beforeunload", warnBeforeLeaving);
+  }, [phase, answerSaving]);
 
-              return (
-                <Label
-                  key={index}
-                  htmlFor={`option-${index}`}
-                  className={`flex items-center gap-3.5 p-4 rounded-xl border transition-all duration-150 cursor-pointer select-none min-h-[56px] ${
-                    isSelected
-                      ? "border-primary bg-primary/10 dark:bg-primary/15 ring-2 ring-primary/40 shadow-sm text-foreground font-medium"
-                      : "border-border/70 bg-card/60 hover:border-primary/40 hover:bg-muted/30 text-foreground"
-                  }`}
-                >
-                  <div
-                    className={`h-7 w-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
-                      isSelected
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground border border-border/60"
-                    }`}
-                  >
-                    {letter}
-                  </div>
+  async function startSession() {
+    if (requestActive.current) return;
+    requestActive.current = true;
+    setError("");
+    setPhase("generating");
+    try {
+      const response = await resolveCareerJob(await generateQuiz({requestId:generationRequest.current ??= crypto.randomUUID()}));
+      if (!response?.quizId || !response.questions?.length) throw new Error("No questions were returned. Please try again.");
+      generationRequest.current=null;setQuiz(response);progressVersion.current=response.progressVersion||0;
+      setAnswers(response.questions.map((_,i)=>response.answers?.[i]||null));
+      const next=response.questions.findIndex((_,i)=>!response.answers?.[i]);setCurrentQuestion(next<0?response.questions.length-1:next);
+      setResult(null);
+      setPhase("active");
+    } catch (failure) { if(failure.code==="RESULT_REMOVED")generationRequest.current=null;setError(failure.message === "Unauthorized" ? "Please sign in again to start your practice session." : failure.message || "Could not prepare your questions. Please try again."); setPhase("ready"); }
+    finally { requestActive.current = false; }
+  }
 
-                  <span className="flex-1 text-sm sm:text-base leading-relaxed">
-                    {option}
-                  </span>
+  async function submitSession() {
+    if (requestActive.current || !quiz || !isPracticeComplete(quiz.questions, answers)) return;
+    requestActive.current = true;
+    setError("");
+    setPhase("submitting");
+    try {
+      const saved = await saveQuizResult({ quizId: quiz.quizId, answers });
+      if (!saved?.id) throw new Error("Your results could not be saved. Please try again.");
+      setResult(saved);
+      setPhase("result");
+      toast.success("Practice completed. Your feedback is saved.");
+    } catch (failure) { setError(failure.message === "Unauthorized" ? "Please sign in again, then retry saving your answers." : failure.message || "Could not save your results. Please try again."); setPhase("active"); }
+    finally { requestActive.current = false; }
+  }
 
-                  <div className="shrink-0">
-                    <RadioGroupItem
-                      value={option}
-                      id={`option-${index}`}
-                      className="h-4 w-4 border-border/80 text-primary focus-visible:ring-primary"
-                    />
-                  </div>
-                </Label>
-              );
-            })}
-          </RadioGroup>
-        </motion.div>
-      </CardContent>
-
-      {/* Footer Navigation */}
-      <CardFooter className="p-5 sm:p-6 border-t border-border/60 bg-card/40 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          {currentQuestion > 0 && (
-            <Button
-              onClick={handlePrevious}
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Previous</span>
-            </Button>
-          )}
-        </div>
-
-        <Button
-          onClick={handleNext}
-          disabled={!selectedAnswer || savingResult}
-          className="gap-2 px-6 ml-auto shadow-md font-bold"
-        >
-          {savingResult ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Saving Assessment...</span>
-            </>
-          ) : isLastQuestion ? (
-            <>
-              <span>Finish & View Score</span>
-              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-            </>
-          ) : (
-            <>
-              <span>Next Question</span>
-              <ArrowRight className="h-4 w-4" />
-            </>
-          )}
-        </Button>
-      </CardFooter>
-    </Card>
+  if (phase === "generating") return <section className="cw-panel cw-tool-empty cw-generating-questions" role="status"><span className="cw-loading-orbit"><Sparkles size={32} /></span><p className="cw-eyebrow">Grounded in your background</p><h2>Preparing your practice questions.</h2><p>We’re using your resume to put together a relevant question set. This can take a moment.</p><span className="cw-loading-label"><Loader2 size={16} className="animate-spin" />Finding the right questions…</span></section>;
+  if (phase === "result") return <QuizResult result={result} onStartNew={startSession} focusOnMount />;
+  if (phase === "active" || phase === "submitting") return <PracticeQuestion questions={quiz.questions} answers={answers} currentQuestion={currentQuestion} industry={industry} error={error} submitting={phase === "submitting" || answerSaving} onAnswer={answerQuestion} onNavigate={setCurrentQuestion} onSubmit={submitSession} />;
+  return (
+    <div className="cw-practice-session-grid">
+      <section className="cw-panel cw-practice-ready"><span className="cw-icon-tile"><FileQuestion size={24} /></span><p className="cw-eyebrow">Your space to prepare</p><h2>Ready when you are.</h2><p>Practice a set of multiple-choice questions based on your resume. Take your time, compare the options, and review the explanations when you’re done.</p><div className="cw-ready-facts"><div><FileQuestion size={18} /><strong>Resume-based</strong><span>Personalized questions</span></div><div><Clock3 size={18} /><strong>No countdown</strong><span>Go at your own pace</span></div><div><Lightbulb size={18} /><strong>Learn as you go</strong><span>Feedback after submission</span></div></div><div className="cw-ready-note"><Sparkles size={18} /><p>You can go back and change your answers before you submit. Your completed session will appear in your practice history.</p></div>{error && <div className="cw-inline-error" role="alert"><strong>Let’s give that another try.</strong><p>{error}</p></div>}<button type="button" className="cw-button" onClick={startSession}>Prepare my questions <ArrowRight size={17} /></button></section>
+      <PreparationCues industry={industry} />
+    </div>
   );
 }

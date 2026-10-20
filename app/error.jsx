@@ -1,14 +1,6 @@
 "use client";
-
-import Link from 'next/link';
-
+import Link from "next/link";
+import { Compass, RotateCw } from "lucide-react";
 export default function ErrorPage({ reset }) {
-  return (
-    <div className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center gap-4 px-6 pt-24 text-center">
-      <h1 className="text-2xl font-bold">We couldn&apos;t load this page</h1>
-      <p className="text-muted-foreground">Please try again. If the problem continues, come back in a few minutes.</p>
-      <button onClick={reset} className="rounded-md bg-primary px-5 py-3 font-semibold text-primary-foreground">Try again</button>
-      <Link href="/" className="text-sm underline underline-offset-4">Return to CareerWise</Link>
-    </div>
-  );
+  return <div className="cw-design cw-status-page"><Compass size={35}/><p className="cw-eyebrow">A brief detour</p><h1>Let’s get you back on track.</h1><p>We couldn’t load this page. Try again, or return home and pick up where you left off.</p><div><button onClick={reset} className="cw-button cw-button-primary"><RotateCw size={15}/>Try again</button><Link className="cw-button cw-button-secondary" href="/">Return home</Link></div></div>;
 }

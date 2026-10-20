@@ -1,5 +1,7 @@
+import { getResumeWorkspace } from "@/actions/workspace-state";
 import { getResumeAnalysis } from "@/actions/resume-analysis";
-import ResumeAnalysis from "./_components/resume-analysis ";
+import { getResumeDocument } from "@/actions/resume";
+import ResumeReview from "./_components/resume-review";
 import { getUserOnboardingStatus } from "@/actions/user";
 import { redirect } from "next/navigation";
 import { privatePageRobots } from "@/lib/site-config";
@@ -7,8 +9,8 @@ import { privatePageRobots } from "@/lib/site-config";
 export const maxDuration = 60;
 
 export const metadata = {
-  title: "Resume Analysis & ATS Diagnostic",
-  description: "Detailed resume analysis, ATS compatibility scoring, and personalized improvement suggestions.",
+  title: "Resume Review",
+  description: "Review your experience, explore personalized feedback, and work on a stronger resume draft.",
   robots: privatePageRobots,
 };
 
@@ -17,11 +19,13 @@ export default async function ResumePage() {
   if (!isOnboarded) {
     redirect("/onboarding");
   }
-  const resume = await getResumeAnalysis();
+  const [resume, workspace, analysis] = await Promise.all([
+    getResumeDocument(),
+    getResumeWorkspace(),
+    getResumeAnalysis().catch(() => null),
+  ]);
 
   return (
-    <div className="container mx-auto">
-      <ResumeAnalysis data={resume} />
-    </div>
+    <ResumeReview key={`${resume?.id}:${resume?.updatedAt?.toISOString()}`} resume={resume} analysis={analysis} workspace={workspace} />
   );
 }

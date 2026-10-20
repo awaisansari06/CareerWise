@@ -15,7 +15,7 @@ export const metadata = {
 
 export default function SecurityArchitecturePage() {
   return (
-    <div className="relative min-h-screen py-16 sm:py-24">
+    <div className="cw-design cw-information-page relative min-h-screen py-16 sm:py-24">
       {/* Background Mesh Grid */}
       <div className="grid-background" />
 

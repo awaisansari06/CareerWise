@@ -1,169 +1,153 @@
 "use client";
 
 import Link from "next/link";
-import React, { useEffect, useRef, useState } from "react";
-import { Button } from "./ui/button";
-import CareerPathBackground from "./career-path-background";
-import Image from "next/image";
-import { ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
-import { useTheme } from "next-themes";
+import { ArrowRight, FileText } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
-import { standardEase } from "@/lib/motion-variants";
+import CareerJourney from "@/components/career-journey";
 
-const HeroSection = ({ preview = false }) => {
-  const imageRef = useRef(null);
-  const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  const shouldReduceMotion = useReducedMotion();
+/* ---------- background orb data ---------- */
+const orbs = [
+  { cx: "12%", cy: "18%", r: 220, color: "var(--hero-orb-1)", delay: 0 },
+  { cx: "78%", cy: "30%", r: 280, color: "var(--hero-orb-2)", delay: 1.2 },
+  { cx: "55%", cy: "82%", r: 170, color: "var(--hero-orb-3)", delay: 2.4 },
+  { cx: "90%", cy: "70%", r: 140, color: "var(--hero-orb-4)", delay: 0.8 },
+];
 
-  // Mount guard prevents hydration mismatch:
-  // On server / first paint we default to the dark banner since the app
-  // defaults to dark mode, then swap after client hydration if needed.
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+/* ---------- floating particle positions ---------- */
+const particles = Array.from({ length: 18 }, (_, i) => ({
+  id: i,
+  left: `${6 + ((i * 47) % 89)}%`,
+  top: `${8 + ((i * 31) % 85)}%`,
+  size: 2 + (i % 3) * 1.5,
+  delay: i * 0.35,
+  duration: 4 + (i % 4) * 1.5,
+}));
 
-  const bannerSrc =
-    mounted && resolvedTheme === "light"
-      ? "/Banner-Light.png"
-      : "/Banner-Dark.png";
+/* ---------- animation variants ---------- */
+const ease = [0.25, 0.1, 0.25, 1];
 
-  useEffect(() => {
-    const imageElement = imageRef.current;
-    if (!imageElement) return;
+const containerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
+};
 
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      const scrollThreshold = 80;
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease } },
+};
 
-      if (scrollPosition > scrollThreshold) {
-        imageElement.classList.add("scrolled");
-      } else {
-        imageElement.classList.remove("scrolled");
-      }
-    };
+const fadeScale = {
+  hidden: { opacity: 0, scale: 0.96 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.8, ease, delay: 0.5 } },
+};
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Motion helpers that respect reduced-motion
-  const getFadeUp = (delay = 0, y = 16) => {
-    if (shouldReduceMotion) return {};
-    return {
-      initial: { opacity: 0, y },
-      animate: { opacity: 1, y: 0 },
-      transition: { duration: 0.5, delay, ease: standardEase },
-    };
-  };
+export default function HeroSection({ preview = false }) {
+  const reduceMotion = useReducedMotion();
 
   return (
-    <section className="career-hero relative w-full overflow-hidden">
-      {!preview && <CareerPathBackground />}
-      <div className="container relative z-10 mx-auto px-5 md:px-6">
-        <div className="career-hero-content flex flex-col items-center text-center mx-auto">
-          {/* Top Innovation Badge */}
-          <motion.div
-            {...getFadeUp(0.05, 12)}
-            className="career-hero-badge inline-flex items-center gap-2 px-3.5 py-2 rounded-full border border-primary/15 bg-card/60 font-semibold text-foreground backdrop-blur-md"
-          >
-            <Sparkles className="h-3.5 w-3.5 shrink-0 text-amber-500" />
-            <span>AI-Powered Career Intelligence Platform</span>
-          </motion.div>
+    <section className="cw-design cw-product-hero" aria-labelledby="hero-title">
+      {/* ───── Animated background layer ───── */}
+      <div className="cw-hero-bg" aria-hidden="true">
+        {/* Gradient orbs */}
+        <svg className="cw-hero-orbs" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            {orbs.map((orb, i) => (
+              <radialGradient key={i} id={`hero-orb-${i}`} cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor={orb.color} stopOpacity="0.35" />
+                <stop offset="100%" stopColor={orb.color} stopOpacity="0" />
+              </radialGradient>
+            ))}
+          </defs>
+          {orbs.map((orb, i) => (
+            <circle
+              key={i}
+              cx={orb.cx}
+              cy={orb.cy}
+              r={orb.r}
+              fill={`url(#hero-orb-${i})`}
+              className="cw-hero-orb-circle"
+              style={{ animationDelay: `${orb.delay}s` }}
+            />
+          ))}
+        </svg>
 
-          {/* Main Headline */}
-          <motion.h1
-            {...getFadeUp(0.15, 16)}
-            className="career-hero-title font-extrabold tracking-tight gradient-title"
-          >
-            Turn Your Experience Into Your Next Opportunity
-          </motion.h1>
+        {/* Dot grid texture */}
+        <div className="cw-hero-grid-texture" />
 
-          {/* Subtitle */}
-          <motion.p
-            {...getFadeUp(0.25, 16)}
-            className="career-hero-description text-muted-foreground"
-          >
-            CareerWise analyzes where you are today, identifies what is holding you back, and helps you prepare for the roles you actually want — from resume improvement to interview readiness and career planning.
-          </motion.p>
-
-          {/* CTA Buttons */}
-          <motion.div
-            {...getFadeUp(0.35, 16)}
-            className="career-hero-actions flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto"
-          >
-            <Button
-              asChild
-              size="lg"
-              className="group w-full sm:w-auto min-h-12 px-7 text-base font-bold gap-2 shadow-lg hover:shadow-xl transition-all"
-            >
-              <Link href="/dashboard">
-                <span>Get Started Free</span>
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </Button>
-
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="w-full sm:w-auto min-h-12 px-7 text-base font-semibold border-border/80 hover:bg-muted/40"
-            >
-              <Link href={preview ? "/#features" : "#features"}>
-                <span>Explore Features</span>
-              </Link>
-            </Button>
-          </motion.div>
-
-          {/* Micro Value Proposition Bar */}
-          <motion.div
-            {...getFadeUp(0.45, 10)}
-            className="career-hero-benefits flex flex-wrap gap-x-6 gap-y-3 text-xs text-muted-foreground font-medium"
-          >
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
-              <span>Resume-driven recommendations</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
-              <span>Role-specific interview practice</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
-              <span>AI-powered market insights</span>
-            </span>
-          </motion.div>
+        {/* Floating particles */}
+        <div className="cw-hero-particles">
+          {particles.map((p) => (
+            <i
+              key={p.id}
+              className="cw-hero-particle"
+              style={{
+                left: p.left,
+                top: p.top,
+                width: p.size,
+                height: p.size,
+                animationDelay: `${p.delay}s`,
+                animationDuration: `${p.duration}s`,
+              }}
+            />
+          ))}
         </div>
 
-        {/* Hero Product Banner Preview with Subtle Ambient Glow */}
-        <motion.div
-          initial={shouldReduceMotion ? {} : { opacity: 0, y: 20, scale: 0.98 }}
-          animate={shouldReduceMotion ? {} : { opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.5, ease: standardEase }}
-          className="relative hero-image-wrapper mt-10 sm:mt-14 md:mt-16 max-w-5xl mx-auto"
-        >
-          {/* Subtle Ambient Cyan/Blue Glow behind Image */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-48 bg-sky-500/15 dark:bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+        {/* Top-edge glow line */}
+        <div className="cw-hero-glow-line" />
+      </div>
 
-          <div
-            ref={imageRef}
-            className="relative hero-image rounded-2xl border border-border/80 bg-card/50 p-2 sm:p-3 shadow-2xl backdrop-blur-md"
-          >
-            <div className="relative overflow-hidden rounded-xl border border-border/60">
-              <Image
-                src={bannerSrc}
-                width={1280}
-                height={720}
-                alt="CareerWise Workspace & Career Dashboard Preview"
-                className="w-full h-auto rounded-lg object-cover"
-                priority
-              />
-            </div>
-          </div>
+      {/* ───── Content ───── */}
+      <div className="cw-container">
+        <motion.div
+          className="cw-product-intro"
+          variants={reduceMotion ? {} : containerVariants}
+          initial={reduceMotion ? undefined : "hidden"}
+          animate={reduceMotion ? undefined : "visible"}
+        >
+          <motion.p className="cw-product-category" variants={fadeUp}>
+            PERSONALIZED CAREER GUIDANCE
+          </motion.p>
+
+          <motion.h1 id="hero-title" variants={fadeUp}>
+            Find the roles you can grow into.
+            <br />
+            <span>Know how to get there.</span>
+          </motion.h1>
+
+          <motion.p className="cw-product-lead" variants={fadeUp}>
+            Connect your experience to career options, see the skills to build,
+            and leave with a practical next step.
+          </motion.p>
+
+          <motion.div className="cw-product-actions" variants={fadeUp}>
+            <Link href="/dashboard" className="cw-button cw-hero-cta-btn">
+              <FileText size={18} />
+              Start my career plan
+              <ArrowRight size={18} />
+            </Link>
+            <Link
+              className="cw-product-secondary"
+              href={preview ? "/#how-it-works" : "#how-it-works"}
+            >
+              How it works <ArrowRight size={16} />
+            </Link>
+          </motion.div>
+
+          <motion.p className="cw-product-promise" variants={fadeUp}>
+            Start with your resume or profile. Get career directions, skill
+            gaps, and a plan to act on.
+          </motion.p>
+        </motion.div>
+
+        <motion.div
+          variants={reduceMotion ? {} : fadeScale}
+          initial={reduceMotion ? undefined : "hidden"}
+          whileInView={reduceMotion ? undefined : "visible"}
+          viewport={{ once: true, amount: 0.1 }}
+        >
+          <CareerJourney />
         </motion.div>
       </div>
     </section>
   );
-};
-
-export default HeroSection;
+}

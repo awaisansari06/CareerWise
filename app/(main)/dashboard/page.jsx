@@ -1,4 +1,4 @@
-import { getIndustryInsights } from "@/actions/dashboard";
+import { getIndustryInsights, getDashboardProgress } from "@/actions/dashboard";
 import { getUserOnboardingStatus } from "@/actions/user";
 import { getResume } from "@/actions/resume";
 import { redirect } from "next/navigation";
@@ -8,8 +8,8 @@ import { privatePageRobots } from "@/lib/site-config";
 export const maxDuration = 60;
 
 export const metadata = {
-  title: "Career Intelligence Command Center",
-  description: "View your real-time industry intelligence, salary benchmarks, and career growth metrics.",
+  title: "Your Career Overview",
+  description: "Your next career step, resume, practice progress, and industry insights in one place.",
   robots: privatePageRobots,
 };
 
@@ -19,14 +19,13 @@ export default async function DashboardPage() {
     redirect("/onboarding");
   }
 
-  const [insights, resume] = await Promise.all([
-    getIndustryInsights(),
+  const [insightResult, resume, progress] = await Promise.all([
+    getIndustryInsights().then((insights) => ({ insights })).catch(() => ({ insights: null, unavailable: true })),
     getResume(),
+    getDashboardProgress(),
   ]);
 
   return (
-    <div className="container mx-auto">
-      <DashboardView insights={insights} initialResume={resume} />
-    </div>
+    <DashboardView insights={insightResult.insights} insightsUnavailable={insightResult.unavailable} initialResume={resume} progress={progress} />
   );
 }

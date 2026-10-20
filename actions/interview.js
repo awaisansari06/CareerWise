@@ -1,134 +1,10 @@
 "use server";
-
-import { consumeAiBudget } from "@/lib/ai-budget";
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import {
-  getGeminiModel,
-  safeGenerateContent,
-  safeParseAiResponse,
-  QuizResponseSchema,
-  formatUntrustedData,
-  PROMPT_SAFETY_DIRECTIVE,
-} from "@/lib/gemini";
+import { revalidatePath } from "next/cache";
+import { queueForCurrentUser } from "@/lib/jobs/queue";
+export async function generateQuiz(input={}){return queueForCurrentUser("INTERVIEW_QUIZ",input);}
 
-/**
- * Generates an interview quiz personalized to candidate's resume.
- * Security: NEVER returns `correctAnswer`, `answer`, or `explanation` to client.
- * The authoritative answer key is preserved exclusively on the server in a draft Assessment.
- */
-export async function generateQuiz() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-    select: { id: true, resume: true },
-  });
-
-  if (!user) throw new Error("User not found");
-
-  await consumeAiBudget(user.id);
-  const resumeContent = user.resume?.content || 'No resume available';
-  const model = getGeminiModel();
-
-  const prompt = `
-You are an expert interviewer and professional curriculum assessor.
-
-${PROMPT_SAFETY_DIRECTIVE}
-
-Your task is to generate **10 multiple-choice interview questions** personalized to this candidate’s resume and industry.
-
-UNTRUSTED RESUME REFERENCE DATA:
-${formatUntrustedData("resume_data", resumeContent)}
-
-Intelligent Behavior Rules:
-1. Analyze the resume to detect:
-   - Primary domain or profession (e.g., Software Engineering, Medicine, Teaching, Marketing, Finance, etc.)
-   - Technical and non-technical skills listed.
-   - Education background (degree, specialization, academic focus).
-   - Experience (roles, years, responsibilities, projects, achievements).
-
-2. Generate interview questions reflecting these aspects:
-   - Skill-based questions related to tools, technologies, or techniques mentioned.
-   - Conceptual or theoretical questions based on their education.
-   - Experience-based situational questions (“How would you handle...”, “In your previous role...”).
-   - 1–2 questions testing general reasoning, ethics, or communication in that field.
-
-3. If the resume lacks enough data, infer the likely field from what is given.
-   If nothing can be inferred, ask general professional or problem-solving questions.
-
-Each question must include:
-  • Question text  
-  • 4 options (A, B, C, D)  
-  • Correct answer (the exact text matching one of the options)  
-  • A short explanation (1–2 sentences)
-
-Output Format:
-Return only valid JSON:
-{
-  "questions": [
-    {
-      "question": "string",
-      "options": ["string", "string", "string", "string"],
-      "correctAnswer": "string",
-      "explanation": "string"
-    }
-  ]
-}
-`;
-
-  try {
-    const result = await safeGenerateContent(model, prompt);
-    const text = result.response.text();
-
-    // Validate structured output with Zod schema
-    const quiz = safeParseAiResponse(text, QuizResponseSchema);
-
-    // Clean up any existing uncompleted draft sessions for this user
-    await db.assessment.deleteMany({
-      where: {
-        userId: user.id,
-        category: "draft",
-      },
-    });
-
-    // Store the authoritative answer key on the server in a draft Assessment record
-    const draft = await db.assessment.create({
-      data: {
-        userId: user.id,
-        quizScore: 0,
-        category: "draft",
-        questions: quiz.questions.map((q, idx) => ({
-          id: idx + 1,
-          question: q.question,
-          options: q.options,
-          answer: q.correctAnswer, // Stored server-side only
-          explanation: q.explanation || "", // Stored server-side only
-        })),
-      },
-    });
-
-    // Return sanitized payload to client: NO correctAnswer and NO explanation
-    return {
-      quizId: draft.id,
-      questions: quiz.questions.map((q, idx) => ({
-        id: idx + 1,
-        question: q.question,
-        options: q.options,
-      })),
-    };
-  } catch (error) {
-    console.error("[Quiz Generation Error]:", error.message);
-    throw new Error(error.message || "Failed to generate quiz questions");
-  }
-}
-
-/**
- * Evaluates candidate answers and records assessment results.
- * Security: Server is the sole authority for scoring. Client-submitted scores are ignored.
- * Validates session ownership, question count, and option legality.
- */
 export async function saveQuizResult(quizDataOrPayload, answersArg, _clientScore) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
@@ -156,6 +32,7 @@ export async function saveQuizResult(quizDataOrPayload, answersArg, _clientScore
     quizId = quizDataOrPayload;
   }
 
+  if(quizId && (typeof quizId!=="string" || quizId.length>120))throw new Error("Invalid practice session.");
   // Authoritative check: locate draft assessment owned by the authenticated user
   let draft = null;
   if (quizId) {
@@ -179,6 +56,7 @@ export async function saveQuizResult(quizDataOrPayload, answersArg, _clientScore
     });
   }
 
+  if (!draft && quizId) {const completed=await db.assessment.findFirst({where:{id:quizId,userId:user.id,category:{not:"draft"}}});if(completed && Array.isArray(answers) && completed.questions.length===answers.length && completed.questions.every((q,i)=>q.userAnswer===answers[i]))return completed;}
   if (!draft) {
     throw new Error("No active quiz session found. Please start a new interview.");
   }
@@ -203,6 +81,7 @@ export async function saveQuizResult(quizDataOrPayload, answersArg, _clientScore
   const questionResults = authoritativeQuestions.map((q, index) => {
     const userAnswer = answers[index];
     const isValidOption = Array.isArray(q.options) && q.options.includes(userAnswer);
+    if(!isValidOption) throw new Error("Choose one of the listed options for every question.");
     const isCorrect = Boolean(
       isValidOption &&
       typeof userAnswer === "string" &&
@@ -228,37 +107,8 @@ export async function saveQuizResult(quizDataOrPayload, answersArg, _clientScore
     ((correctCount / authoritativeQuestions.length) * 100).toFixed(1)
   );
 
-  // Generate improvement tips for incorrect answers via Gemini
-  const wrongAnswers = questionResults.filter((q) => !q.isCorrect);
-  let improvementTip = null;
-
-  if (wrongAnswers.length > 0) {
-    const wrongQuestionsText = wrongAnswers
-      .slice(0, 5)
-      .map(
-        (q) =>
-          `Q: "${q.question}"\nCorrect: "${q.answer}"\nUser: "${q.userAnswer}"`
-      )
-      .join("\n\n");
-
-    const improvementPrompt = `
-      The candidate got the following questions wrong in an interview assessment:
-
-      ${wrongQuestionsText}
-
-      Based on these mistakes, provide 1-2 concise, actionable improvement tips.
-      Keep them short, professional, and encouraging.
-    `;
-
-    try {
-      await consumeAiBudget(user.id);
-      const model = getGeminiModel();
-      const tipResult = await safeGenerateContent(model, improvementPrompt);
-      improvementTip = tipResult.response.text().trim();
-    } catch (error) {
-      console.error("[Improvement Tip Generation Error]:", error.message);
-    }
-  }
+  const missed=questionResults.find(q=>!q.isCorrect);
+  const improvementTip=missed ? "Review the explanation for your first missed question, then explain the answer in your own words before trying another set." : "Try a new set to practice different situations.";
 
   try {
     // Transition draft to completed assessment with server-verified score
@@ -270,11 +120,14 @@ export async function saveQuizResult(quizDataOrPayload, answersArg, _clientScore
           questions: questionResults,
           category: "Technical",
           improvementTip,
+          selectedAnswers: answers,
         },
       });
       if (transition.count !== 1) throw new Error("This quiz has already been submitted.");
       return tx.assessment.findUnique({ where: { id: draft.id } });
     });
+    revalidatePath("/interview");
+    revalidatePath("/dashboard");
     return completedAssessment;
   } catch (error) {
     console.error("Error saving quiz result:", error);

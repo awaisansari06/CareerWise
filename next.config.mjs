@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  distDir: process.env.CAREERWISE_BUILD_DIR || ".next",
   devIndicators: false,
   poweredByHeader: false,
   images: {

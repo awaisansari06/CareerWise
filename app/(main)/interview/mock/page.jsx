@@ -1,51 +1,28 @@
 import Link from "next/link";
-import { ArrowLeft, Sparkles, BrainCircuit } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { redirect } from "next/navigation";
+import { getActivePractice } from "@/actions/workspace-state";
 import Quiz from "../_components/quiz";
+import { getResumeDocument } from "@/actions/resume";
+import { getUserOnboardingStatus } from "@/actions/user";
 import { privatePageRobots } from "@/lib/site-config";
 
+export const maxDuration = 60;
 export const metadata = {
-  title: "Mock Interview Session",
-  description: "Interactive AI mock interview session with automated scoring.",
+  title: "Interview Practice Session",
+  description: "Practice resume-based multiple-choice questions, then review your answers and feedback.",
   robots: privatePageRobots,
 };
 
-export default function MockInterviewPage() {
+export default async function MockInterviewPage() {
+  const { isOnboarded } = await getUserOnboardingStatus();
+  if (!isOnboarded) redirect("/onboarding");
+  const [resume, activePractice] = await Promise.all([getResumeDocument(),getActivePractice()]);
   return (
-    <div className="container mx-auto max-w-4xl space-y-6 py-6 px-4">
-      {/* Navigation & Header */}
-      <div className="space-y-3">
-        <Button
-          asChild
-          variant="ghost"
-          size="sm"
-          className="gap-2 pl-2 text-muted-foreground hover:text-foreground -ml-2"
-        >
-          <Link href="/interview">
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Interview Preparation</span>
-          </Link>
-        </Button>
-
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-border/60 pb-5">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="p-1.5 rounded-md bg-primary/10 text-primary">
-                <BrainCircuit className="h-5 w-5" />
-              </span>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">
-                AI Mock Interview
-              </h1>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Dynamic role-targeted questions designed to test your knowledge, problem-solving, and communication
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Quiz Flow */}
-      <Quiz />
+    <div className="cw-practice-page">
+      <Link href="/interview" className="cw-text-link cw-back-link"><ArrowLeft size={15} />Back to interview lab</Link>
+      <header className="cw-tool-heading"><div><p className="cw-eyebrow">Interview lab · Practice session</p><h1>A little practice.<br className="cw-wide-break" /> A stronger next step.</h1><p>Take your time. Think it through. Learn something you can use.</p></div></header>
+      <Quiz initialPractice={activePractice} industry={resume?.document?.industry} />
     </div>
   );
 }

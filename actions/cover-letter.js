@@ -1,121 +1,9 @@
 "use server";
-
-import { consumeAiBudget } from "@/lib/ai-budget";
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import {
-  getGeminiModel,
-  safeGenerateContent,
-  formatUntrustedData,
-  PROMPT_SAFETY_DIRECTIVE,
-  CoverLetterInputSchema,
-} from "@/lib/gemini";
-
-export async function generateCoverLetter(data) {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  // Step 1: Strict input validation before any processing or AI calls
-  const validation = CoverLetterInputSchema.safeParse(data);
-  if (!validation.success) {
-    const issue = validation.error.issues[0]?.message || "Invalid cover letter input";
-    throw new Error(issue);
-  }
-
-  const { jobTitle, companyName, jobDescription } = validation.data;
-
-  // Step 2: Ensure authenticated user and resume exist
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-    include: { resume: true },
-  });
-
-  if (!user) throw new Error("User not found");
-  if (!user.resume) throw new Error("Resume not uploaded");
-
-  await consumeAiBudget(user.id);
-  try {
-    resume = typeof user.resume.content === "string" ? JSON.parse(user.resume.content) : user.resume.content;
-  } catch {
-    resume = {};
-  }
-
-  const currentDate = new Date().toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-
-  const candidateInfo = {
-    name: resume.name || "",
-    email: resume.email || "",
-    phone: resume.phone || "",
-    education: resume.education || [],
-    experience: resume.experience || [],
-    skills: resume.skills || [],
-    projects: resume.projects || [],
-    languages: resume.languages || [],
-  };
-
-  const model = getGeminiModel();
-
-  const prompt = `
-You are a professional executive career coach.
-
-${PROMPT_SAFETY_DIRECTIVE}
-
-Write a professional cover letter for the specified target role and company based on the candidate's background.
-
-TARGET ROLE & COMPANY:
-${formatUntrustedData("target_job_title", jobTitle)}
-${formatUntrustedData("target_company_name", companyName)}
-
-TARGET JOB DESCRIPTION:
-${formatUntrustedData("job_description", jobDescription)}
-
-CANDIDATE PROFILE DATA:
-${formatUntrustedData("candidate_resume", candidateInfo)}
-
-Date:
-${currentDate}
-
-Requirements:
-1. Use a professional, enthusiastic tone
-2. Highlight relevant skills and experience
-3. Show understanding of the company's needs
-4. Keep it concise (max 400 words)
-5. Use proper business letter formatting in markdown with the exact date "${currentDate}" placed below the candidate header
-6. Include specific examples of achievements or projects
-7. Relate candidate's background to job requirements
-
-Format the letter in markdown. The date of the letter must be "${currentDate}". Do not insert placeholder text like [Your Name] or [Your Address].
-`;
-
-  try {
-    const result = await safeGenerateContent(model, prompt);
-    const content = result.response.text().trim();
-
-    if (!content) {
-      throw new Error("AI returned empty cover letter");
-    }
-
-    const coverLetter = await db.coverLetter.create({
-      data: {
-        content,
-        jobDescription,
-        companyName,
-        jobTitle,
-        status: "completed",
-        userId: user.id, // Ownership strictly bound to authenticated user
-      },
-    });
-
-    return coverLetter;
-  } catch (error) {
-    console.error("[Cover Letter Generation Error]:", error.message);
-    throw new Error(error.message || "Failed to generate cover letter");
-  }
-}
+import { revalidatePath } from "next/cache";
+import { queueForCurrentUser } from "@/lib/jobs/queue";
+export async function generateCoverLetter(input){return queueForCurrentUser("COVER_LETTER",input);}
 
 export async function getCoverLetters() {
   const { userId } = await auth();
@@ -139,6 +27,7 @@ export async function getCoverLetters() {
       jobDescription: true,
       status: true,
       createdAt: true,
+      updatedAt: true,
     },
     orderBy: {
       createdAt: "desc",
@@ -201,9 +90,24 @@ export async function deleteCoverLetter(id) {
     throw new Error("Cover letter not found or unauthorized");
   }
 
-  return await db.coverLetter.delete({
-    where: {
-      id: existing.id,
-    },
+  const deleted = await db.$transaction(async tx=>{
+    const record=await tx.coverLetter.delete({where:{id:existing.id}});
+    await tx.careerJob.updateMany({where:{userId:user.id,kind:"COVER_LETTER",result:{path:["id"],equals:existing.id}},data:{result:{deleted:true},dismissed:true}});
+    return record;
   });
+  revalidatePath("/ai-cover-letter");
+  revalidatePath("/dashboard");
+  return deleted;
+}
+
+export async function updateCoverLetter({ id, content, updatedAt }) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+  if (typeof id !== "string" || typeof content !== "string" || !content.trim() || content.length > 30000 || !Number.isFinite(Date.parse(updatedAt))) throw new Error("Enter a letter of up to 30,000 characters.");
+  const user = await db.user.findUnique({ where: { clerkUserId: userId }, select: { id: true } });
+  if (!user) throw new Error("User not found");
+  const result = await db.coverLetter.updateMany({ where: { id, userId: user.id, updatedAt: new Date(updatedAt) }, data: { content: content.trim() } });
+  if (!result.count) throw new Error("This letter changed in another tab. Reload before editing again.");
+  revalidatePath("/ai-cover-letter");
+  return db.coverLetter.findFirst({ where: { id, userId: user.id } });
 }

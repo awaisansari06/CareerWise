@@ -1,4 +1,5 @@
 "use client";
+import { resolveCareerJob } from "@/lib/jobs/client";
 
 import React, { useState, useEffect, useMemo } from "react";
 import MDEditor from "@uiw/react-md-editor";
@@ -55,7 +56,7 @@ export default function CoverLetterPreview({ letter }) {
     loading: regenerating,
     fn: regenerateFn,
     data: newLetter,
-  } = useFetch(generateCoverLetter);
+  } = useFetch(async input=>resolveCareerJob(await generateCoverLetter(input)));
 
   useEffect(() => {
     if (newLetter) {

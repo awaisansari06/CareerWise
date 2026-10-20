@@ -1,7 +1,2 @@
-'use client'
-import { SignUp } from "@clerk/nextjs";
-
-export default function Page() {
-  return <SignUp />;
-}
-// redirecturl="/onboarding"
+import CareerAuth from "@/components/career-auth";
+export default function Page() { return <CareerAuth signup/>; }
