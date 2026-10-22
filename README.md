@@ -109,7 +109,7 @@ CareerWise includes adaptive themes tailored for focused preparation in both dar
 ## ✨ Key Features
 
 ### 📄 Resume Intelligence
-- **PDF Upload & Validation:** Secure server-side validation ensuring valid `%PDF-` file headers and enforcing a 5MB size limit.
+- **PDF Upload & Validation:** Secure server-side validation ensuring valid `%PDF-` file headers and enforcing a 4MB size limit, with room for Vercel request overhead.
 - **ATS Diagnostic Analysis:** Comprehensive diagnostic scoring (0–100) across contact information, professional experience, education, and technical skills.
 - **Keyword Matching & Gap Detection:** Identifies critical missing domain keywords and evaluates keyword density for target industry alignment.
 - **Actionable Recommendations:** Structured tips highlighting positive elements and targeted areas for improvement.
@@ -324,7 +324,7 @@ CareerWise implements defensive programming across authentication, data mutation
 - **Route Protection:** Handled via Clerk Edge middleware (`middleware.js`), restricting workspace routes (`/dashboard`, `/resume`, `/interview`, `/roadmap`, `/ai-cover-letter`, `/onboarding`) while maintaining public access to the landing page and auth handlers.
 - **Server-Side Authorization Checks:** Every Server Action independently validates user identity via `auth()` and enforces ownership boundaries. Cross-user mutations or queries return unauthorized or null.
 - **Server-Side Quiz Scoring:** Quiz questions are sanitized before reaching the browser. Answer verification and final score calculations occur strictly on the server.
-- **File & Binary Validation:** Uploaded resumes undergo magic-byte verification (`%PDF-`) to reject disguised executables and strictly enforce a 5MB size limit before buffering or processing.
+- **File & Binary Validation:** Uploaded resumes undergo magic-byte verification (`%PDF-`) to reject disguised executables and strictly enforce a 4MB size limit before buffering or processing.
 - **Structured Output Validation:** AI outputs are parsed through defensive extraction helpers and validated against strict Zod schemas. Structured output validation and defensive parsing reduce malformed or unsafe AI responses.
 - **Prompt Injection Defense:** User-supplied text (resumes and job descriptions) is enclosed in XML-style delimiter blocks paired with explicit AI safety directives to treat user input as passive data.
 - **Bounded AI Resilience:** Gemini calls implement an explicit 25-second timeout and capped exponential retries (max 2 attempts) for transient rate limits (HTTP 429), failing fast on non-retryable client errors.

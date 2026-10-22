@@ -1,27 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, FileText } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight, FileText, Check, Compass, ChartNoAxesColumnIncreasing } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import CareerJourney from "@/components/career-journey";
-
-/* ---------- background orb data ---------- */
-const orbs = [
-  { cx: "12%", cy: "18%", r: 220, color: "var(--hero-orb-1)", delay: 0 },
-  { cx: "78%", cy: "30%", r: 280, color: "var(--hero-orb-2)", delay: 1.2 },
-  { cx: "55%", cy: "82%", r: 170, color: "var(--hero-orb-3)", delay: 2.4 },
-  { cx: "90%", cy: "70%", r: 140, color: "var(--hero-orb-4)", delay: 0.8 },
-];
-
-/* ---------- floating particle positions ---------- */
-const particles = Array.from({ length: 18 }, (_, i) => ({
-  id: i,
-  left: `${6 + ((i * 47) % 89)}%`,
-  top: `${8 + ((i * 31) % 85)}%`,
-  size: 2 + (i % 3) * 1.5,
-  delay: i * 0.35,
-  duration: 4 + (i % 4) * 1.5,
-}));
 
 /* ---------- animation variants ---------- */
 const ease = [0.25, 0.1, 0.25, 1];
@@ -45,100 +28,70 @@ export default function HeroSection({ preview = false }) {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="cw-design cw-product-hero" aria-labelledby="hero-title">
-      {/* ───── Animated background layer ───── */}
-      <div className="cw-hero-bg" aria-hidden="true">
-        {/* Gradient orbs */}
-        <svg className="cw-hero-orbs" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice">
-          <defs>
-            {orbs.map((orb, i) => (
-              <radialGradient key={i} id={`hero-orb-${i}`} cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor={orb.color} stopOpacity="0.35" />
-                <stop offset="100%" stopColor={orb.color} stopOpacity="0" />
-              </radialGradient>
-            ))}
-          </defs>
-          {orbs.map((orb, i) => (
-            <circle
-              key={i}
-              cx={orb.cx}
-              cy={orb.cy}
-              r={orb.r}
-              fill={`url(#hero-orb-${i})`}
-              className="cw-hero-orb-circle"
-              style={{ animationDelay: `${orb.delay}s` }}
-            />
-          ))}
-        </svg>
-
-        {/* Dot grid texture */}
-        <div className="cw-hero-grid-texture" />
-
-        {/* Floating particles */}
-        <div className="cw-hero-particles">
-          {particles.map((p) => (
-            <i
-              key={p.id}
-              className="cw-hero-particle"
-              style={{
-                left: p.left,
-                top: p.top,
-                width: p.size,
-                height: p.size,
-                animationDelay: `${p.delay}s`,
-                animationDuration: `${p.duration}s`,
-              }}
-            />
-          ))}
+    <>
+    <section className="cw-design cw-portrait-hero" aria-labelledby="hero-title">
+      <div className="cw-portrait-art" aria-hidden="true">
+        <div className="cw-portrait-orbit cw-portrait-orbit-one" />
+        <div className="cw-portrait-orbit cw-portrait-orbit-two" />
+        <div className="cw-portrait-photo">
+          <Image src="/images/career-portrait.webp" alt="" fill priority sizes="(max-width: 700px) 100vw, 58vw" />
         </div>
-
-        {/* Top-edge glow line */}
-        <div className="cw-hero-glow-line" />
       </div>
 
       {/* ───── Content ───── */}
       <div className="cw-container">
         <motion.div
-          className="cw-product-intro"
+          className="cw-portrait-copy"
           variants={reduceMotion ? {} : containerVariants}
           initial={reduceMotion ? undefined : "hidden"}
           animate={reduceMotion ? undefined : "visible"}
         >
-          <motion.p className="cw-product-category" variants={fadeUp}>
-            PERSONALIZED CAREER GUIDANCE
+          <motion.p className="cw-portrait-category" variants={fadeUp}>
+            <span aria-hidden="true" /> YOUR EXPERIENCE. NEW POSSIBILITIES.
           </motion.p>
 
           <motion.h1 id="hero-title" variants={fadeUp}>
-            Find the roles you can grow into.
+            Your next chapter.
             <br />
-            <span>Know how to get there.</span>
+            <span>A clearer direction.</span>
           </motion.h1>
 
-          <motion.p className="cw-product-lead" variants={fadeUp}>
-            Connect your experience to career options, see the skills to build,
-            and leave with a practical next step.
+          <motion.p className="cw-portrait-lead" variants={fadeUp}>
+            Turn what you’ve done into what comes next. Discover career paths,
+            build the right skills, and move forward with a plan that’s yours.
           </motion.p>
 
-          <motion.div className="cw-product-actions" variants={fadeUp}>
-            <Link href="/dashboard" className="cw-button cw-hero-cta-btn">
+          <motion.div className="cw-portrait-actions" variants={fadeUp}>
+            <Link href="/dashboard" className="cw-button cw-portrait-primary">
               <FileText size={18} />
               Start my career plan
               <ArrowRight size={18} />
             </Link>
             <Link
-              className="cw-product-secondary"
+              className="cw-portrait-secondary"
               href={preview ? "/#how-it-works" : "#how-it-works"}
             >
               How it works <ArrowRight size={16} />
             </Link>
           </motion.div>
 
-          <motion.p className="cw-product-promise" variants={fadeUp}>
-            Start with your resume or profile. Get career directions, skill
-            gaps, and a plan to act on.
+          <motion.p className="cw-portrait-promises" variants={fadeUp}>
+            <span><Check size={14} /> Start with a resume or profile</span>
+            <span><Check size={14} /> Guidance built around you</span>
+            <span><Check size={14} /> Practical next steps</span>
           </motion.p>
+          <motion.ul className="cw-portrait-benefits" variants={fadeUp} aria-label="Your career toolkit">
+            {[
+              { icon: Compass, title: "Explore career paths", detail: "See where your experience can take you.", tone: "blue" },
+              { icon: ChartNoAxesColumnIncreasing, title: "Build the right skills", detail: "Close gaps and grow with confidence.", tone: "green" },
+              { icon: FileText, title: "Get a personalized plan", detail: "Practical steps for real progress.", tone: "purple" },
+            ].map(({ icon: Icon, title, detail, tone }) => <li key={title}><span className={`cw-portrait-benefit-icon is-${tone}`}><Icon size={22} strokeWidth={1.7} /></span><div><h2>{title}</h2><p>{detail}</p></div></li>)}
+          </motion.ul>
         </motion.div>
-
+      </div>
+    </section>
+    <section className="cw-design cw-portrait-journey" aria-label="Explore an example career journey">
+      <div className="cw-container">
         <motion.div
           variants={reduceMotion ? {} : fadeScale}
           initial={reduceMotion ? undefined : "hidden"}
@@ -149,5 +102,6 @@ export default function HeroSection({ preview = false }) {
         </motion.div>
       </div>
     </section>
+    </>
   );
 }

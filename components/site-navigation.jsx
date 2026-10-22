@@ -27,7 +27,7 @@ const workspaceLinks = [
 export default function SiteNavigation({ initialSignedIn = false }) {
   const { isLoaded, userId } = useAuth();
   const signedIn = isLoaded ? !!userId : initialSignedIn;
-  const account = <UserButton afterSignOutUrl="/" appearance={{elements:{avatarBox:"!w-9 !h-9",userButtonPopoverCard:"bg-popover text-popover-foreground border border-border",userButtonTrigger:"cw-user-trigger"}}}/>;
+  const account = <UserButton afterSignOutUrl="/" appearance={{elements:{avatarBox:"!w-8 !h-8",userButtonPopoverCard:"bg-popover text-popover-foreground border border-border",userButtonTrigger:"cw-user-trigger"}}}/>;
   return <NavigationShell signedIn={signedIn} account={account}/>;
 }
 
@@ -44,7 +44,7 @@ export function NavigationShell({ signedIn = false, account }) {
   }, []);
   const active = href => pathname === href || pathname.startsWith(href + "/");
   const close = () => setOpen(false);
-  return <header className="cw-design cw-site-header">
+  return <header className={`cw-design cw-site-header${pathname === "/" ? " cw-portrait-header" : ""}`}>
     <nav className="cw-header-nav" aria-label="Main navigation">
       <Link href="/" className="cw-brand" aria-label="CareerWise home" onClick={close}>
         <CareerWiseLogo className="cw-brand-mark"/>

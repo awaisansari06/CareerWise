@@ -127,7 +127,7 @@ export default function TermsOfServicePage() {
             <ul className="space-y-2.5 pl-2 text-muted-foreground text-xs md:text-sm">
               <li className="flex items-start gap-2.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-rose-500 mt-2 shrink-0" />
-                <span>Uploading non-PDF files, executable scripts, malicious payloads, or files exceeding our 5MB size limit.</span>
+                <span>Uploading non-PDF files, executable scripts, malicious payloads, or files exceeding our 4MB size limit.</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-rose-500 mt-2 shrink-0" />

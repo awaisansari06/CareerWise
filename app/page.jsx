@@ -22,7 +22,7 @@ function StoryPreview({ kind }) {
 export default function LandingPage() {
   const jsonLd = { "@context": "https://schema.org", "@type": "SoftwareApplication", name: siteConfig.name, url: siteConfig.url, applicationCategory: "BusinessApplication", operatingSystem: "Web", description: siteConfig.description, offers: { "@type": "Offer", price: "0", priceCurrency: "USD" } };
   return (
-    <div className="cw-design cw-landing">
+    <div className="cw-design cw-landing cw-portrait-landing">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <HeroSection />
 

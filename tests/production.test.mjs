@@ -11,11 +11,14 @@ test('resource links reject executable schemes, credentials, and malformed value
   assert.equal(getSafeResourceUrl('https://example.com/course?q=1'), 'https://example.com/course?q=1');
 });
 
-test('resume upload checks the actual PDF header and rejects oversized files', async () => {
+test('resume upload checks PDF headers and the serverless-safe size boundary', async () => {
   const file = (contents, name = 'resume.pdf') => Object.assign(new Blob([contents], {type:'application/pdf'}), {name});
   await assert.rejects(validateResumeFile(file('<script>not a PDF</script>')), /signature/);
   await assert.rejects(validateResumeFile(file('%PDF-test', 'resume.exe')), /Unsupported/);
-  await assert.rejects(validateResumeFile({name:'resume.pdf',size:MAX_RESUME_SIZE+1,type:'application/pdf'}), /5MB/);
+  assert.equal(MAX_RESUME_SIZE,4*1024*1024);
+  const maximumFile=Object.assign(new Blob(['%PDF-',new Uint8Array(MAX_RESUME_SIZE-5)],{type:'application/pdf'}),{name:'maximum.pdf'});
+  assert.equal((await validateResumeFile(maximumFile)).size,MAX_RESUME_SIZE);
+  await assert.rejects(validateResumeFile({name:'resume.pdf',size:MAX_RESUME_SIZE+1,type:'application/pdf'}), /4 MB/);
   assert.equal((await validateResumeFile(file('%PDF-1.7\nvalid header'))).filename, 'resume.pdf');
 });
 
@@ -39,6 +42,15 @@ test('AI errors are sanitized and slow calls time out without retries', async ()
 });
 
 import { getProductionConfigurationIssues } from '../lib/production-config.js';
+import { parseDatabaseUrl } from '../lib/database-url.js';
+test('database configuration rejects copied shell commands without exposing credentials', () => {
+  const url = 'postgresql://user:PRIVATE_PASSWORD@example.invalid/careerwise?sslmode=require';
+  assert.equal(parseDatabaseUrl(url).hostname, 'example.invalid');
+  for (const value of [`psql '${url}'`, `'${url}'`, 'https://example.invalid/db', 'postgresql://example.invalid', undefined]) {
+    assert.throws(() => parseDatabaseUrl(value), error => !error.message.includes('PRIVATE_PASSWORD') && /PostgreSQL URL/.test(error.message));
+  }
+  assert.ok(getProductionConfigurationIssues({ DATABASE_URL: `psql '${url}'` }).some(issue => issue.startsWith('DATABASE_URL')));
+});
 test('production preflight rejects development authentication and reports names without secrets', () => {
   const issues = getProductionConfigurationIssues({NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:'pk_test_PRIVATE_VALUE',CLERK_SECRET_KEY:'sk_test_PRIVATE_VALUE',NEXT_PUBLIC_APP_URL:'http://localhost:3000'});
   assert.ok(issues.some(issue => issue.includes('production instance')));
