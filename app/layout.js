@@ -4,6 +4,7 @@ import "./globals.css";
 import "./careerwise-redesign.css";
 import "./careerwise-tools.css";
 import "./careerwise-system.css";
+import "./careerwise-portrait.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import Header from "@/components/header";
 import { ClerkProvider } from "@clerk/nextjs";

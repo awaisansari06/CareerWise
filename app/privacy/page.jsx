@@ -133,7 +133,7 @@ export default function PrivacyPolicyPage() {
               </p>
             </div>
             <p className="text-muted-foreground leading-relaxed text-xs md:text-sm">
-              All uploads are subject to pre-flight security constraints: files must be genuine PDFs under 5 Megabytes (5MB) verified via binary magic bytes (<code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">%PDF-</code>). Non-PDF files and disguised executables are blocked and rejected before processing.
+              All uploads are subject to pre-flight security constraints: files must be genuine PDFs under 4 Megabytes (4MB) verified via binary magic bytes (<code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">%PDF-</code>). Non-PDF files and disguised executables are blocked and rejected before processing.
             </p>
           </MotionFadeUp>
 

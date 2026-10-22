@@ -86,10 +86,10 @@ export default function SecurityArchitecturePage() {
               <div className="p-4 rounded-xl border border-border/60 bg-muted/20 space-y-1.5">
                 <p className="font-bold text-foreground flex items-center gap-1.5">
                   <Lock className="h-4 w-4 text-emerald-500" />
-                  <span>5MB Size Cap & MIME Enforcement</span>
+                  <span>4MB Size Cap & MIME Enforcement</span>
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  Files exceeding 5 Megabytes (5MB) or with non-PDF MIME types (<code className="font-mono bg-muted px-1 rounded">application/pdf</code>) are blocked immediately before invoking AI models or database connections.
+                  Files exceeding 4 Megabytes (4MB) or with non-PDF MIME types (<code className="font-mono bg-muted px-1 rounded">application/pdf</code>) are blocked immediately before invoking AI models or database connections.
                 </p>
               </div>
             </div>
