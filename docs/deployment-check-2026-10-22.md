@@ -6,6 +6,7 @@
 - Repository ESLint check, with no errors or warnings.
 - All 34 automated tests.
 - Production server smoke check of 21 URLs: public pages/assets return 200; protected routes return 307 sign-in redirects.
+- No streamed server-rendering error markers were found in those responses. An unknown page and a missing static image both return the expected 404 without Clerk middleware errors.
 - 15 internal route targets exist; no missing static asset references or fragment targets were found.
 - Neon connection succeeds outside the local network sandbox. All 19 migration-history entries are applied, with none rolled back. No application records were read or changed during the connectivity check.
 - Landing portrait, generated texture, favicon, app icon, robots and sitemap endpoints respond successfully.

@@ -9,7 +9,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Header from "@/components/header";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/sonner";
-import { BodyScrollFix } from "@/components/body-scroll-fix";
 
 
 
@@ -90,7 +89,6 @@ export default async function RootLayout({ children }) {
     >
       <html lang="en" suppressHydrationWarning>
         <body className={`font-sans antialiased min-h-screen flex flex-col bg-background text-foreground selection:bg-primary/20`}>
-          <BodyScrollFix />
           <ThemeProvider
             attribute="class"
             defaultTheme="light"

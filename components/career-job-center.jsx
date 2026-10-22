@@ -4,14 +4,33 @@ import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2, CircleAlert, Loader2, RefreshCw, X } from "lucide-react";
-import { listCareerJobs, retryCareerJob, dismissCareerJob } from "@/actions/career-jobs";
+import { retryCareerJob, dismissCareerJob } from "@/actions/career-jobs";
 import { jobDestination } from "@/lib/jobs/policy";
+import { createJobPoller } from "@/lib/jobs/poller";
 const labels={RESUME_PARSE:"Reading your resume",RESUME_ANALYSIS:"Resume feedback",INSIGHTS:"Career and industry insights",INTERVIEW_QUIZ:"Interview questions",COVER_LETTER:"Cover letter",ROADMAP:"Career roadmap"};
 export default function CareerJobCenter(){
- const [jobs,setJobs]=useState([]),[error,setError]=useState(""),[busy,setBusy]=useState(null);const pathname=usePathname();const router=useRouter(),previous=useRef(new Map()),mounted=useRef(true);
- const loading=useRef(false);
- const load=useCallback(async()=>{if(loading.current)return;loading.current=true;try{const next=await listCareerJobs();if(!mounted.current)return;let changed=false;for(const j of next){const key=`${pathname}:${j.id}`;if(j.status==="COMPLETED" && previous.current.get(key)!=="COMPLETED")changed=true;previous.current.set(key,j.status);}setJobs(next);setError("");if(changed)router.refresh();}catch{if(mounted.current)setError("Background task status is unavailable. Check your connection and try again.");}finally{loading.current=false;}},[router,pathname]);
- useEffect(()=>{mounted.current=true;load();const hasActive=jobs.some(j=>["QUEUED","RUNNING"].includes(j.status));const timer=setInterval(load,hasActive?4000:30000);const onVisibility=()=>{if(document.visibilityState==="visible")load();};window.addEventListener("careerwise:jobs-changed",load);window.addEventListener("visibilitychange",onVisibility);return()=>{mounted.current=false;clearInterval(timer);window.removeEventListener("careerwise:jobs-changed",load);window.removeEventListener("visibilitychange",onVisibility);};},[load,jobs]);
+ const [jobs,setJobs]=useState([]),[error,setError]=useState(""),[busy,setBusy]=useState(null);const pathname=usePathname();const router=useRouter(),poller=useRef(null);
+ const load=useCallback(()=>poller.current?.wake(),[]);
+ useEffect(()=>{
+   const controller=new AbortController();
+   const worker=createJobPoller({
+     fetchJobs:async()=>{
+       const response=await fetch('/api/career-jobs',{cache:'no-store',signal:controller.signal});
+       if(!response.ok)throw new Error('Task status unavailable');
+       return response.json();
+     },
+     onJobs:setJobs,
+     onError:failure=>setError(failure?'Background task status is unavailable. Check your connection and try again.':''),
+     onComplete:()=>router.refresh(),
+     isVisible:()=>document.visibilityState==='visible',
+   });
+   poller.current=worker;worker.wake();
+   const onVisibility=()=>document.visibilityState==='visible'?worker.wake():worker.pause();
+   window.addEventListener('careerwise:jobs-changed',load);
+   document.addEventListener('visibilitychange',onVisibility);
+   return()=>{worker.stop();controller.abort();poller.current=null;window.removeEventListener('careerwise:jobs-changed',load);document.removeEventListener('visibilitychange',onVisibility);};
+ },[router,load]);
+ useEffect(()=>{load();},[pathname,load]);
  async function action(job,retry){setBusy(job.id);try{if(retry)await retryCareerJob(job.id);else await dismissCareerJob(job.id);await load();}catch(err){setError(err.message||"Could not update the task.");}finally{setBusy(null);}}
  if(!jobs.length&&!error)return null;
  return <CareerJobList jobs={jobs} error={error} busy={busy} load={load} action={action}/>;

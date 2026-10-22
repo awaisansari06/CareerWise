@@ -3,9 +3,13 @@ import { db } from "@/lib/prisma";
 import { currentCareerUser, dispatchJob } from "@/lib/jobs/queue";
 import { publicJob, parseJobInput, safeQuiz } from "@/lib/jobs/policy";
 import { consumeAiBudget } from "@/lib/ai-budget";
+import { auth } from "@clerk/nextjs/server";
 const statusFields={id:true,kind:true,status:true,attempt:true,error:true,result:true,createdAt:true,updatedAt:true};
 export async function listCareerJobs(){
-  const user=await currentCareerUser();
+  const {userId}=await auth();
+  if(!userId)throw new Error('Unauthorized');
+  const user=await db.user.findUnique({where:{clerkUserId:userId},select:{id:true}});
+  if(!user)throw new Error('User not found');
   const jobs=await db.careerJob.findMany({
     where:{
       userId:user.id,
@@ -27,7 +31,7 @@ export async function listCareerJobs(){
       else if(j.status==="COMPLETED"&&completed.length<5)completed.push(j);
     }
   }
-  return [...queued,...failed,...completed].map(publicJob);
+  return [...queued,...failed,...completed].map(job=>publicJob({...job,result:job.kind==='COVER_LETTER' && typeof job.result?.id==='string'?{id:job.result.id}:null}));
 }
 export async function getCareerJob(id){if(typeof id!=="string"||id.length>120)throw new Error("Invalid task.");const user=await currentCareerUser();const job=await db.careerJob.findFirst({where:{id,userId:user.id},select:statusFields});if(!job)throw new Error("Task not found.");if(job.status==="COMPLETED"&&job.kind==="INTERVIEW_QUIZ"){const draft=typeof job.result?.quizId==="string"?await db.assessment.findFirst({where:{id:job.result.quizId,userId:user.id}}):null;return publicJob({...job,result:!draft?{deleted:true}:draft.category==="draft"?safeQuiz(draft):{completedSession:true}});}
 if(job.status==="COMPLETED"&&job.result?.id&&["COVER_LETTER","ROADMAP"].includes(job.kind)){const model=job.kind==="COVER_LETTER"?db.coverLetter:db.roadmap;const current=await model.findFirst({where:{id:job.result.id,userId:user.id}});return publicJob({...job,result:current?JSON.parse(JSON.stringify(current)):{deleted:true}});}return publicJob(job);}

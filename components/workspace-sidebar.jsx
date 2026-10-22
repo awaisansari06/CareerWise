@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { Compass, FileText, Home, Mic, PenLine, Route, Sparkles } from "lucide-react";
 import { CareerMountain } from "@/components/career-preview";
 

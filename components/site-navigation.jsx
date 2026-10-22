@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { usePathname } from "next/navigation";
 import { useAuth, UserButton } from "@clerk/nextjs";
 import { ArrowRight, ChevronDown, Compass, FileText, Home, Menu, Mic, PenLine, Route } from "lucide-react";
@@ -35,7 +35,8 @@ export default function SiteNavigation({ initialSignedIn = false }) {
 export function NavigationShell({ signedIn = false, account }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  useEffect(() => { setOpen(false); }, [pathname]);
+  const [toolsOpen,setToolsOpen]=useState(false);
+  useEffect(() => { setOpen(false);setToolsOpen(false); }, [pathname]);
   useEffect(() => {
     const desktop = window.matchMedia("(min-width: 1024px)");
     const closeOnDesktop = event => { if (event.matches) setOpen(false); };
@@ -54,7 +55,7 @@ export function NavigationShell({ signedIn = false, account }) {
         {!signedIn ? marketingLinks.map(link => <Link key={link.href} href={link.href}>{link.label}</Link>) : <>
           <Link href="/career-paths" aria-current={active("/career-paths") ? "page" : undefined}>Career paths</Link>
           <Link href="/interview" aria-current={active("/interview") ? "page" : undefined}>Interview lab</Link>
-          <DropdownMenu><DropdownMenuTrigger className="cw-nav-tools">Career tools <ChevronDown size={14}/></DropdownMenuTrigger><DropdownMenuContent align="center" className="cw-design cw-tools-menu">{workspaceLinks.filter(link => !["/career-paths","/interview"].includes(link.href)).map(({href,label,icon:Icon}) => <DropdownMenuItem key={href} asChild><Link href={href} aria-current={active(href) ? "page" : undefined}><Icon size={17}/>{label}</Link></DropdownMenuItem>)}</DropdownMenuContent></DropdownMenu>
+          <DropdownMenu open={toolsOpen} onOpenChange={setToolsOpen} modal={false}><DropdownMenuTrigger className="cw-nav-tools">Career tools <ChevronDown size={14}/></DropdownMenuTrigger><DropdownMenuContent align="center" className="cw-design cw-tools-menu">{workspaceLinks.filter(link => !["/career-paths","/interview"].includes(link.href)).map(({href,label,icon:Icon}) => <DropdownMenuItem key={href} asChild onSelect={()=>setToolsOpen(false)}><Link href={href} aria-current={active(href) ? "page" : undefined}><Icon size={17}/>{label}</Link></DropdownMenuItem>)}</DropdownMenuContent></DropdownMenu>
         </>}
       </div>
       <div className="cw-nav-actions">

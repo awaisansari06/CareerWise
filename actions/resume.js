@@ -19,26 +19,8 @@ export async function uploadResume(formData){
  * Returns metadata and extracted personal skills for the authenticated user's current active resume.
  */
 export async function getResume() {
-  const { userId: clerkUserId } = await auth();
-  if (!clerkUserId) throw new Error("Unauthorized");
-
-  const user = await db.user.findUnique({
-    where: { clerkUserId },
-    select: { id: true },
-  });
-
-  if (!user) throw new Error("User not found");
-
-  const resume = await db.resume.findUnique({
-    where: { userId: user.id },
-    select: {
-      id: true,
-      filename: true,
-      content: true,
-      updatedAt: true,
-      createdAt: true,
-    },
-  });
+  const user = await currentCareerUser();
+  const resume = user.resume;
 
   if (!resume) return null;
 
@@ -65,15 +47,10 @@ export async function getResume() {
 
 /** A private reconstructed document for the signed-in user's review workspace. */
 export async function getResumeDocument() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-    select: { resume: { select: { id: true, filename: true, content: true, updatedAt: true } } },
-  });
-  if (!user) throw new Error("User not found");
+  const user = await currentCareerUser();
   if (!user.resume) return null;
-  const { content, ...metadata } = user.resume;
+  const { id,filename,updatedAt,content } = user.resume;
+  const metadata={id,filename,updatedAt};
   return { ...metadata, document: parseResumeDocument(content) };
 }
 
